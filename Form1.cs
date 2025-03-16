@@ -2,6 +2,9 @@ using System.IO;
 using PdfiumViewer;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Diagnostics;
+using System.Windows.Forms.VisualStyles;
 
 namespace Gerador_ecxel
 {
@@ -46,7 +49,6 @@ namespace Gerador_ecxel
 						previousName = _colaborador;
 					}
 				}
-
 				MessageBox.Show("PDF gerado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
 			}
 			catch (Exception ex)
@@ -62,55 +64,73 @@ namespace Gerador_ecxel
 			PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
 			doc.Open();
 
-			BaseFont bfArial = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.EMBEDDED);
-			iTextSharp.text.Font titleFont = new iTextSharp.text.Font(bfArial, 16, iTextSharp.text.Font.BOLD);
-			iTextSharp.text.Font tableHeaderFont = new iTextSharp.text.Font(bfArial, 12, iTextSharp.text.Font.BOLD);
-			iTextSharp.text.Font tableFont = new iTextSharp.text.Font(bfArial, 10, iTextSharp.text.Font.NORMAL);
-			iTextSharp.text.Font sectionFont = new iTextSharp.text.Font(bfArial, 12, iTextSharp.text.Font.BOLD);
-			iTextSharp.text.Font boldFont = new iTextSharp.text.Font(bfArial, 10, iTextSharp.text.Font.BOLD);
+			string repoRoot = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent.FullName;
 
-			Paragraph title = new Paragraph("DESPESAS DE KM EM VIATURA PRÓPRIA\r\n", titleFont)
+			string fontPath = Path.Combine(repoRoot, "Fontes\\calibri-regular.ttf");
+			BaseFont bfCalibri = BaseFont.CreateFont(fontPath, BaseFont.WINANSI, BaseFont.EMBEDDED);
+
+			fontPath = Path.Combine(repoRoot, "Fontes\\calibri-bold.ttf");
+			BaseFont bfcalibriBold = BaseFont.CreateFont(fontPath, BaseFont.WINANSI, BaseFont.EMBEDDED);
+
+			fontPath = Path.Combine(repoRoot, "Fontes\\calibri-bold-italic.ttf");
+			BaseFont bfcalibriBIt = BaseFont.CreateFont(fontPath, BaseFont.WINANSI, BaseFont.EMBEDDED);
+
+			fontPath = Path.Combine(repoRoot, "Fontes\\verdana.ttf");
+			BaseFont bfVerdana = BaseFont.CreateFont(fontPath, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+
+			iTextSharp.text.Font titleFont = new iTextSharp.text.Font(bfcalibriBold, 15, iTextSharp.text.Font.BOLD);
+			iTextSharp.text.Font subTitleFont = new iTextSharp.text.Font(bfVerdana, 12, iTextSharp.text.Font.BOLD, new BaseColor(75, 86, 98, 255));
+			iTextSharp.text.Font tableHeaderFont = new iTextSharp.text.Font(bfcalibriBIt, 11, iTextSharp.text.Font.BOLD);
+			iTextSharp.text.Font tableFont = new iTextSharp.text.Font(bfCalibri, 10, iTextSharp.text.Font.NORMAL);
+			iTextSharp.text.Font sectionFont = new iTextSharp.text.Font(bfVerdana, 11, iTextSharp.text.Font.NORMAL);
+			iTextSharp.text.Font boldFont = new iTextSharp.text.Font(bfcalibriBold, 9, iTextSharp.text.Font.BOLD);
+			Paragraph title = new Paragraph("DESPESAS DE KM EM VIATURA PRÓPRIA\n", titleFont)
 			{
 				Alignment = Element.ALIGN_CENTER
 			};
 			doc.Add(title);
 			doc.Add(new Paragraph("\n"));
 
-			PdfPTable infoTable = new PdfPTable(2);
-			infoTable.WidthPercentage = 100;
-			infoTable.SetWidths(new float[] { 30f, 70f });
-			AddCell(infoTable, "Identificação:", sectionFont, true);
-			AddCell(infoTable, "", tableFont, false);
-			AddCell(infoTable, "Utilizador:", sectionFont, true);
-			AddCell(infoTable, _colaborador, tableFont, false);
-			AddCell(infoTable, "Empresa:", sectionFont, true);
-			AddCell(infoTable, "Expressglass SA", tableFont, false);
-			doc.Add(infoTable);
+			doc.Add(new Paragraph("Identificação: \n\n", subTitleFont));
+			PdfPTable identificacaoTable = new PdfPTable(2);
+			identificacaoTable.WidthPercentage = 100;
+			identificacaoTable.SetWidths(new float[] { 30f, 70f });
+
+			AddCell(identificacaoTable, "Utilizador:", sectionFont, 25f, "nenhuma");
+			AddCell(identificacaoTable, _colaborador, sectionFont, 25f, "cheia");
+			AddCell(identificacaoTable, "Nº Colaborador:", sectionFont, 25f, "nenhuma");
+			AddCell(identificacaoTable, "171", sectionFont, 25f, "cheia");
+			AddCell(identificacaoTable, "Empresa:", sectionFont, 25f, "nenhuma");
+			AddCell(identificacaoTable, "Expressglass SA", sectionFont, 25f, "cheia");
+			AddCell(identificacaoTable, "Centro de Custo:", sectionFont, 25f, "nenhuma");
+			AddCell(identificacaoTable, "BARCELOS", sectionFont, 25f, "cheia");
+
+			doc.Add(identificacaoTable);
 			doc.Add(new Paragraph("\n"));
 
-			PdfPTable dataTable = new PdfPTable(2);
-			infoTable.WidthPercentage = 100;
-			infoTable.SetWidths(new float[] { 30f, 70f });
-			AddCell(dataTable, "Despesas - Mapa de Km:", sectionFont, true);
-			AddCell(dataTable, "Data:", sectionFont, true);
-			AddCell(dataTable, _data, tableFont, false);
-			AddCell(dataTable, "Matrícula:", sectionFont, true);
-			AddCell(dataTable, _matricula, tableFont, false);
-			AddCell(dataTable, "Proprietario:", sectionFont, true);
-			AddCell(dataTable, _colaborador, tableFont, false);
-			doc.Add(dataTable);
+			doc.Add(new Paragraph("Despesas - Mapa de Km \n\n", subTitleFont));
+			PdfPTable DespesasTable = new PdfPTable(2);
+			DespesasTable.WidthPercentage = 100;
+			DespesasTable.SetWidths(new float[] { 30f, 70f });
+			AddCell(DespesasTable, "Data",sectionFont, 25f, "nenhuma");
+			AddCell(DespesasTable, _data, sectionFont, 25f, "Cheia");
+			AddCell(DespesasTable, "Matrícula:", sectionFont, 25f, "nenhuma");
+			AddCell(DespesasTable, _matricula, sectionFont, 25f, "cheia");
+			AddCell(DespesasTable, "Proprietário:", sectionFont, 25f, "nenhuma");
+			AddCell(DespesasTable, "IDFK", sectionFont, 25f, "cheia");
+			doc.Add(DespesasTable);
 			doc.Add(new Paragraph("\n"));
 
-			PdfPTable table = new PdfPTable(5);
+
+			PdfPTable table = new PdfPTable(6);
 			table.WidthPercentage = 100;
-			table.SetWidths(new float[] { 15f, 15f, 15f, 10f, 45f });
+			table.SetWidths(new float[] { 15f, 15f, 15f, 10f, 45f, 45f});
 
-			string[] headers = { "Dia", "Saída", "Chegada", "Km's", "Local" };
+			string[] headers = { "Dia", "Saída", "Chegada", "Km's", "Local", "Motivo" };
 			foreach (var header in headers)
 			{
 				PdfPCell cell = new PdfPCell(new Phrase(header, tableHeaderFont))
 				{
-					BackgroundColor = new BaseColor(100, 149, 237), // Azul Médio
 					HorizontalAlignment = Element.ALIGN_CENTER,
 					Padding = 5f
 				};
@@ -121,7 +141,7 @@ namespace Gerador_ecxel
 			{
 				string status = entry[6];
 				if (status != "Novo") continue;
-				string[] row = { entry[0], "09H00", "18H00", entry[5], entry[3] };
+				string[] row = { entry[0], "09H00", "18H00", entry[5], entry[3], entry[4] };
 				foreach (var dataValue in row)
 				{
 					PdfPCell cell = new PdfPCell(new Phrase(dataValue, tableFont))
@@ -138,12 +158,12 @@ namespace Gerador_ecxel
 			PdfPTable summaryTable = new PdfPTable(2);
 			summaryTable.WidthPercentage = 100;
 			summaryTable.SetWidths(new float[] { 50f, 50f });
-			AddCell(summaryTable, "Total Km:", sectionFont, true);
-			AddCell(summaryTable, _klm.ToString(), tableFont, false);
-			AddCell(summaryTable, "Valor/Km:", sectionFont, true);
-			AddCell(summaryTable, "0,36 €", tableFont, false);
-			AddCell(summaryTable, "Total de Despesas:", sectionFont, true);
-			AddCell(summaryTable, "46,80 €", tableFont, false);
+			AddCell(summaryTable, "Total Km:", sectionFont, 20f, "nenhuma");
+			AddCell(summaryTable, _klm.ToString(), tableFont, 20f, "nenhuma");
+			AddCell(summaryTable, "Valor/Km:", sectionFont, 20f, "nenhuma");
+			AddCell(summaryTable, "0,36 €", tableFont, 20f, "nenhuma");
+			AddCell(summaryTable, "Total de Despesas:", sectionFont, 20f, "cheia");
+			AddCell(summaryTable, "46,80 €", tableFont, 20f, "cheia");
 			doc.Add(summaryTable);
 			doc.Add(new Paragraph("\n"));
 
@@ -154,17 +174,28 @@ namespace Gerador_ecxel
 			Console.WriteLine("PDF Gerado com sucesso: " + filePath);
 		}
 
-		private void AddCell(PdfPTable table, string text, iTextSharp.text.Font font, bool isHeader)
+		private void AddCell(PdfPTable table, string text, iTextSharp.text.Font font, float height, string borderType)
 		{
 			PdfPCell cell = new PdfPCell(new Phrase(text, font))
 			{
-				BackgroundColor = isHeader ? new BaseColor(230, 230, 230) : BaseColor.WHITE,
 				HorizontalAlignment = Element.ALIGN_LEFT,
-				Padding = 5f
+				Padding = 5f,
+				FixedHeight = height
 			};
+			if (borderType == "nenhuma")
+			{
+				cell.Border = PdfPCell.NO_BORDER;
+			}
+			else if (borderType == "fina")
+			{
+				cell.BorderWidth = 0.5f;
+			}
+			else if (borderType == "cheia")
+			{
+				cell.BorderWidth = 1.5f;
+			}
 			table.AddCell(cell);
 		}
-
 		private void button1_Click(object sender, EventArgs e)
 		{
 			string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Relatorio_Notion_Teresa Nunes.pdf");
