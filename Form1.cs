@@ -2,11 +2,6 @@ using System.IO;
 using PdfiumViewer;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Diagnostics;
-using System.Windows.Forms.VisualStyles;
-using System.Drawing;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Gerador_ecxel
 {
@@ -73,18 +68,16 @@ namespace Gerador_ecxel
 
 			doc.Open();
 
-			string repoRoot = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent.FullName;
-
-			string fontPath = Path.Combine(repoRoot, "Sources\\calibri-regular.ttf");
+			string fontPath =  "Sources\\calibri-regular.ttf";
 			BaseFont bfCalibri = BaseFont.CreateFont(fontPath, BaseFont.WINANSI, BaseFont.EMBEDDED);
 
-			fontPath = Path.Combine(repoRoot, "Sources\\calibri-bold.ttf");
+			fontPath = "Sources\\calibri-regular.ttf";
 			BaseFont bfcalibriBold = BaseFont.CreateFont(fontPath, BaseFont.WINANSI, BaseFont.EMBEDDED);
 
-			fontPath = Path.Combine(repoRoot, "Sources\\calibri-bold-italic.ttf");
+			fontPath = "Sources\\calibri-regular.ttf";
 			BaseFont bfcalibriBIt = BaseFont.CreateFont(fontPath, BaseFont.WINANSI, BaseFont.EMBEDDED);
 
-			fontPath = Path.Combine(repoRoot, "Sources\\verdana.ttf");
+			fontPath = "Sources\\calibri-regular.ttf";
 			BaseFont bfVerdana = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
 
 			iTextSharp.text.Font titleFont = new iTextSharp.text.Font(bfcalibriBold, 13, iTextSharp.text.Font.BOLD);
@@ -95,7 +88,7 @@ namespace Gerador_ecxel
 			iTextSharp.text.Font cellFont = new iTextSharp.text.Font(bfVerdana, 7, iTextSharp.text.Font.NORMAL, baseColor);
 			iTextSharp.text.Font boldFont = new iTextSharp.text.Font(bfcalibriBold, 9, iTextSharp.text.Font.BOLD, baseColor);
 
-			string imagePath = Path.Combine(repoRoot, "Sources\\logo.jpeg");
+			string imagePath = "Sources\\logo.jpeg";
 			if (File.Exists(imagePath))
 			{
 				iTextSharp.text.Image img = iTextSharp.text.Image.GetInstance(imagePath);
@@ -249,15 +242,32 @@ namespace Gerador_ecxel
 			AddCell(obsTable, "", sectionFont, 70f, "fina");
 			doc.Add(obsTable);
 
-			PdfPTable assignTable = new PdfPTable(4);
-			assignTable.WidthPercentage = 100;
-			assignTable.SetWidths(new float[] { 30f, 30f, 40f, 30f });
+			PdfPTable assignTable = new PdfPTable(3);
+			assignTable.WidthPercentage = 75;
+			assignTable.SetWidths(new float[] { 30f, 30f, 40f });
 			assignTable.HorizontalAlignment = Element.ALIGN_LEFT;
 			assignTable.SpacingBefore = 35;
-			AddCell(assignTable, "O Colaborador:", sectionFont, 14, "nenhuma");
-			AddCellUL(assignTable, "", sectionFont, 14, Element.ALIGN_RIGHT);
-			AddCellAlign(assignTable, "O Responsável:", sectionFont, 14, "nenhuma", Element.ALIGN_CENTER);
-			AddCellUL(assignTable, "", sectionFont, 14, Element.ALIGN_RIGHT);
+			PdfPCell cellBot = new PdfPCell(new Phrase("O Colaborador:", sectionFont))
+			{
+				VerticalAlignment = Element.ALIGN_BOTTOM,
+				FixedHeight = 50,
+				Border = PdfPCell.NO_BORDER
+			};
+			assignTable.AddCell(cellBot);
+			AddCellUL(assignTable, "", sectionFont, 50, Element.ALIGN_RIGHT);
+			cellBot = new PdfPCell(new Phrase("O Responsável:", sectionFont))
+			{
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_BOTTOM,
+				FixedHeight = 50,
+				Border = PdfPCell.NO_BORDER
+			};
+			assignTable.AddCell(cellBot);
+
+			iTextSharp.text.Image imgBot = iTextSharp.text.Image.GetInstance("Sources\\Assign.png");
+			imgBot.ScaleAbsolute(100, 60f);
+			imgBot.SetAbsolutePosition(doc.PageSize.Width - 190, doc.BottomMargin + 125);
+			doc.Add(imgBot);
 			doc.Add(assignTable);
 			doc.Add(new Paragraph("\n"));
 			doc.Add(new Paragraph("Nota: valores recebidos até dia 16 do mês N, serão pagos no mês N, valores recebidos entre dia 17 e 31 do mês N serão pagos no mês N+1", sectionFont));
