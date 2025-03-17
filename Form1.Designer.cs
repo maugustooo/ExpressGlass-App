@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
 			GerarPdf = new Button();
 			panelPDF = new Panel();
 			button1 = new Button();
@@ -35,7 +36,7 @@
 			// 
 			// GerarPdf
 			// 
-			GerarPdf.Location = new Point(12, 35);
+			GerarPdf.Location = new Point(12, 12);
 			GerarPdf.Name = "GerarPdf";
 			GerarPdf.Size = new Size(304, 23);
 			GerarPdf.TabIndex = 0;
@@ -45,14 +46,14 @@
 			// 
 			// panelPDF
 			// 
-			panelPDF.Location = new Point(698, 41);
+			panelPDF.Location = new Point(322, 41);
 			panelPDF.Name = "panelPDF";
 			panelPDF.Size = new Size(630, 891);
 			panelPDF.TabIndex = 1;
 			// 
 			// button1
 			// 
-			button1.Location = new Point(698, 12);
+			button1.Location = new Point(322, 12);
 			button1.Name = "button1";
 			button1.Size = new Size(630, 23);
 			button1.TabIndex = 2;
@@ -64,12 +65,13 @@
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(1340, 647);
+			ClientSize = new Size(1151, 706);
 			Controls.Add(button1);
 			Controls.Add(panelPDF);
 			Controls.Add(GerarPdf);
+			Icon = (Icon)resources.GetObject("$this.Icon");
 			Name = "Form1";
-			Text = "Form1";
+			Text = "PDF Generator";
 			ResumeLayout(false);
 		}
 
