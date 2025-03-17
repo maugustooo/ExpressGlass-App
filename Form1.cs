@@ -20,7 +20,8 @@ namespace Gerador_ecxel
 		private string _motivo;
 		private string _klm;
 		private string _status;
-
+		private string _loja;
+		private string _cod;
 
 		public Form1()
 		{
@@ -44,6 +45,8 @@ namespace Gerador_ecxel
 					_motivo = entries[i][4];
 					_klm = entries[i][5];
 					_status = entries[i][6];
+					_cod = entries[i][7];
+					_loja = entries[i][8];
 					if (_colaborador != previousName && _status == "Novo")
 					{
 						await GeneratePdf(entries);
@@ -123,7 +126,7 @@ namespace Gerador_ecxel
 			identificacaoTable.SetWidths(new float[] { 30f, 30f });
 			identificacaoTable.HorizontalAlignment = Element.ALIGN_LEFT;
 			AddCell(identificacaoTable, "Nº Colaborador:", sectionFont, 14f, "nenhuma");
-			AddCellAlign(identificacaoTable, "171", sectionFont, 14f, "cheia", Element.ALIGN_CENTER);
+			AddCellAlign(identificacaoTable, _cod, sectionFont, 14f, "cheia", Element.ALIGN_CENTER);
 			doc.Add(identificacaoTable);
 			doc.Add(new Paragraph("\n"));
 
@@ -141,7 +144,7 @@ namespace Gerador_ecxel
 			identificacaoTable.SetWidths(new float[] { 30f, 30f });
 			identificacaoTable.HorizontalAlignment = Element.ALIGN_LEFT;
 			AddCell(identificacaoTable, "Centro de Custo:", sectionFont, 14f, "nenhuma");
-			AddCell(identificacaoTable, "IDFK", sectionFont, 14f, "cheia");
+			AddCell(identificacaoTable, _loja, sectionFont, 14f, "cheia");
 			doc.Add(identificacaoTable);
 			doc.Add(new Paragraph("\n"));
 
