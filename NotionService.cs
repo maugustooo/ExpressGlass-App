@@ -1,24 +1,114 @@
 ﻿using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using System.Diagnostics;
-using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Text;
+using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.Ocsp;
+using System.Diagnostics;
 
 namespace Gerador_ecxel
 {
     public class NotionService
     {
         private const string dataBaseUrl = "https://api.notion.com/v1/databases/";
-        private readonly string Token;
-        private readonly string DatabaseId;
+        private readonly string _token;
+        private readonly string _dataBaseId;
         public NotionService(string token, string databaseId)
         {
-            Token = token;
-            DatabaseId = databaseId;
+			_token = token;
+            _dataBaseId = databaseId;
         }
+
+		public async Task UpdateStatus()
+		{
+			var client = new HttpClient();
+			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+			client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
+			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+			var searchBody = new
+			{
+				filter = new
+				{
+					property = "Status",
+					status = new
+					{
+						equals = "Novo"
+					}
+				}
+			};
+			if (string.IsNullOrEmpty(dataBaseUrl) || string.IsNullOrEmpty(_dataBaseId))
+			{
+				MessageBox.Show("Erro: URL do banco de dados ou ID não estão definidos.");
+				return;
+			}
+			var response = await client.PostAsync(
+				$"{dataBaseUrl}{_dataBaseId}/query",
+				new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(searchBody), Encoding.UTF8, "application/json")
+			);
+			if (!response.IsSuccessStatusCode)
+			{
+				MessageBox.Show($"Erro ao buscar páginas: {response.StatusCode}");
+				return;
+			}
+			var jsonResponse = await response.Content.ReadAsStringAsync();
+			var jsonObject = JObject.Parse(jsonResponse);
+
+			if (!jsonObject.ContainsKey("results") || jsonObject["results"] == null)
+			{
+				MessageBox.Show("Erro: resposta inesperada do Notion.");
+				return;
+			}
+			var pages = JObject.Parse(jsonResponse)["results"];
+
+			if (pages == null || !pages.HasValues)
+			{
+				MessageBox.Show("Nenhuma página com status 'Novo' encontrada.");
+				return;
+			}
+
+			foreach (var page in pages)
+			{
+				var pageId = page["id"]?.ToString();
+				if (string.IsNullOrEmpty(pageId)) continue;
+
+				var updateBody = new
+				{
+					properties = new
+					{
+						Status = new
+						{
+							status = new
+							{
+								name = "Concluído"
+							}
+						}
+					}
+				};
+
+				string jsonUpdate = Newtonsoft.Json.JsonConvert.SerializeObject(updateBody, Formatting.Indented);
+				Console.WriteLine($"Atualizando página {pageId} com JSON:\n{jsonUpdate}");
+
+				var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"https://api.notion.com/v1/pages/{pageId}")
+				{
+					Content = new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(updateBody), Encoding.UTF8, "application/json")
+				};
+
+				var updateResponse = await client.SendAsync(request);
+				var responseContent = await updateResponse.Content.ReadAsStringAsync();
+				Console.WriteLine($"Resposta da API do Notion:\n{responseContent}");
+				Console.WriteLine($"Atualizando página {pageId} com JSON:\n{jsonUpdate}");
+
+				if (!updateResponse.IsSuccessStatusCode)
+				{
+					MessageBox.Show($"Erro ao atualizar a página {pageId}: {updateResponse.StatusCode}");
+				}
+			}
+			MessageBox.Show("Todos os status 'Novo' foram atualizados para 'Concluído'!");
+		}
+
 
 		private async Task<string> getLoja(string pageId, string notionApiKey)
 		{
@@ -50,7 +140,7 @@ namespace Gerador_ecxel
 			return "Sem Loja";
 		}
 
-		public async Task<(string Nome, string Cod, string Loja)> getNameAndId(string idRelacionado, string notionApiKey)
+		private async Task<(string Nome, string Cod, string Loja)> getNameAndId(string idRelacionado, string notionApiKey)
 		{
 			using (HttpClient client = new HttpClient())
 			{
@@ -104,11 +194,11 @@ namespace Gerador_ecxel
 
 		public async Task<List<string[]>> GetDatabase()
         {
-            var client = new RestClient($"{dataBaseUrl}{DatabaseId}/query");
+            var client = new RestClient($"{dataBaseUrl}{_dataBaseId}/query");
             var request = new RestRequest();
             request.Method = Method.Post;
 
-            request.AddHeader("Authorization", "Bearer " + Token);
+            request.AddHeader("Authorization", "Bearer " + _token);
             request.AddHeader("Notion-Version", "2022-06-28");
             request.AddHeader("Content-Type", "application/json");
             request.AddJsonBody(new { });
@@ -135,7 +225,7 @@ namespace Gerador_ecxel
 						string loja = "Sem Loja";
 						if (idRelacionado != null)
                         {
-                            var (nome, cod, lojas) = await getNameAndId(idRelacionado, Token);
+                            var (nome, cod, lojas) = await getNameAndId(idRelacionado, _token);
                             name = nome;
 							id = cod;
                             loja = lojas;

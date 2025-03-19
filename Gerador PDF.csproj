@@ -11,15 +11,46 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="apple-touch-icon-150x150.ico" />
+    <Content Include="apple-touch-icon-150x150.ico"></Content>
+    <Content Include="Source\Assign.png"></Content>
+    <Content Include="Source\calibri-bold-italic.ttf"></Content>
+    <Content Include="Source\calibri-bold.ttf"></Content>
+    <Content Include="Source\calibri-italic.ttf"></Content>
+    <Content Include="Source\calibri-regular.ttf"></Content>
+    <Content Include="Source\favicon.ico">
+    </Content>
+    <Content Include="Source\logo.jpeg">
+    </Content>
+    <Content Include="Source\verdana-bold.ttf">
+    </Content>
+    <Content Include="Source\verdana.ttf">
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <DesignData Include="Source\verdana-bold-italic.ttf">
+    </DesignData>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="iTextSharp" Version="5.5.13.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="PdfiumViewer" Version="2.13.0" />
-    <PackageReference Include="PdfiumViewer.Native.x86_64.v8-xfa" Version="2018.4.8.256" />
     <PackageReference Include="RestSharp" Version="112.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
 using System.IO;
-using PdfiumViewer;
+using System.Threading.Tasks;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 
@@ -17,20 +17,27 @@ namespace Gerador_ecxel
 		private string _status;
 		private string _loja;
 		private string _cod;
+		private string _folderPath;
+		private NotionService _notionService;
 
 		public Form1()
 		{
 			InitializeComponent();
+			_notionService = new NotionService("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", "1a2a53a0578180849ed2c31ac791c876");
 		}
-
 		private async void GerarPdf_Click(object sender, EventArgs e)
 		{
 			try
 			{
-				NotionService notionService = new NotionService("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", "1a2a53a0578180849ed2c31ac791c876");
-				List<string[]> entries = await notionService.GetDatabase();
-				string previousName = null;
-
+				statusLabel.Visible = true;
+				statusLabel.Text = "A Recolher Dados...";
+				statusLabel.ForeColor = Color.Blue;
+				progressBar1.Style = ProgressBarStyle.Marquee;
+				progressBar1.Visible = true;
+				List<string[]> entries = await _notionService.GetDatabase();
+				string previousName = "";
+				int pdfCount = 0;
+				statusLabel.Text = "A Gerar PDf`s...";
 				for (int i = 0; i < entries.Count; i++)
 				{
 					_data = entries[i][0];
@@ -45,13 +52,28 @@ namespace Gerador_ecxel
 					if (_colaborador != previousName && _status == "Novo")
 					{
 						await GeneratePdf(entries);
+						pdfCount++;
 						previousName = _colaborador;
 					}
 				}
+
+				if (pdfCount <= 0)
+				{
+					MessageBox.Show("Nenhum Dado para gerar", "Erro!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					progressBar1.Visible = false;
+					statusLabel.Visible = false;
+					return;
+				}
+				progressBar1.Visible = false;
+				PdfDirButton.Visible = true;
+				statusLabel.Visible = false;
 				MessageBox.Show("PDF gerado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				await _notionService.UpdateStatus();
 			}
 			catch (Exception ex)
 			{
+				progressBar1.Visible = false;
+				statusLabel.Visible = false;
 				MessageBox.Show($"Erro ao gerar PDF: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
@@ -59,26 +81,26 @@ namespace Gerador_ecxel
 		public async Task GeneratePdf(List<string[]> entries)
 		{
 			var baseColor = new BaseColor(75, 85, 87, 255);
-			string folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Relatorios");
-			if (!Directory.Exists(folderPath))
-				Directory.CreateDirectory(folderPath);
-			string filePath = Path.Combine(folderPath, $"Relatorio_Notion_{_colaborador}.pdf");
+			_folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Relatorios");
+			if (!Directory.Exists(_folderPath))
+				Directory.CreateDirectory(_folderPath);
+			if (string.IsNullOrEmpty(_colaborador) || string.IsNullOrEmpty(_data) || string.IsNullOrEmpty(_folderPath))
+			{
+				throw new Exception("Variáveis de nome do arquivo estão nulas ou vazias.");
+			}
+			string filePath = Path.Combine(_folderPath, $"Relatorio_{_colaborador}" + "_" + $"{_data}.pdf");
 			Document doc = new Document(PageSize.A4);
+			if (doc == null)
+				throw new Exception("O documento não foi inicializado corretamente.");
 			PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
 
 			doc.Open();
+			string sourceDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Source");
 
-			string fontPath =  "Sources\\calibri-regular.ttf";
-			BaseFont bfCalibri = BaseFont.CreateFont(fontPath, BaseFont.WINANSI, BaseFont.EMBEDDED);
-
-			fontPath = "Sources\\calibri-regular.ttf";
-			BaseFont bfcalibriBold = BaseFont.CreateFont(fontPath, BaseFont.WINANSI, BaseFont.EMBEDDED);
-
-			fontPath = "Sources\\calibri-regular.ttf";
-			BaseFont bfcalibriBIt = BaseFont.CreateFont(fontPath, BaseFont.WINANSI, BaseFont.EMBEDDED);
-
-			fontPath = "Sources\\calibri-regular.ttf";
-			BaseFont bfVerdana = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+			BaseFont bfCalibri = BaseFont.CreateFont(Path.Combine(sourceDir, "calibri-regular.ttf"), BaseFont.WINANSI, BaseFont.EMBEDDED);
+			BaseFont bfcalibriBold = BaseFont.CreateFont(Path.Combine(sourceDir, "calibri-bold.ttf"), BaseFont.WINANSI, BaseFont.EMBEDDED);
+			BaseFont bfcalibriBIt = BaseFont.CreateFont(Path.Combine(sourceDir, "calibri-bold-italic.ttf"), BaseFont.WINANSI, BaseFont.EMBEDDED);
+			BaseFont bfVerdana = BaseFont.CreateFont(Path.Combine(sourceDir, "verdana.ttf"), BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
 
 			iTextSharp.text.Font titleFont = new iTextSharp.text.Font(bfcalibriBold, 13, iTextSharp.text.Font.BOLD);
 			iTextSharp.text.Font subTitleFont = new iTextSharp.text.Font(bfVerdana, 12, iTextSharp.text.Font.BOLD, baseColor);
@@ -88,7 +110,7 @@ namespace Gerador_ecxel
 			iTextSharp.text.Font cellFont = new iTextSharp.text.Font(bfVerdana, 7, iTextSharp.text.Font.NORMAL, baseColor);
 			iTextSharp.text.Font boldFont = new iTextSharp.text.Font(bfcalibriBold, 9, iTextSharp.text.Font.BOLD, baseColor);
 
-			string imagePath = "Sources\\logo.jpeg";
+			string imagePath = Path.Combine(sourceDir, "logo.jpeg");
 			if (File.Exists(imagePath))
 			{
 				iTextSharp.text.Image img = iTextSharp.text.Image.GetInstance(imagePath);
@@ -147,7 +169,7 @@ namespace Gerador_ecxel
 			identificacaoTable.WidthPercentage = 60;
 			identificacaoTable.SetWidths(new float[] { 30f, 30f });
 			identificacaoTable.HorizontalAlignment = Element.ALIGN_LEFT;
-			AddCell(identificacaoTable, "Data",sectionFont, 14f, "nenhuma");
+			AddCell(identificacaoTable, "Data", sectionFont, 14f, "nenhuma");
 			AddCell(identificacaoTable, _data, sectionFont, 14f, "cheia");
 			doc.Add(identificacaoTable);
 			doc.Add(new Paragraph("\n"));
@@ -173,7 +195,7 @@ namespace Gerador_ecxel
 
 			PdfPTable table = new PdfPTable(6);
 			table.WidthPercentage = 100;
-			table.SetWidths(new float[] { 25f, 15f, 15f, 10f, 25f, 45f});
+			table.SetWidths(new float[] { 25f, 15f, 15f, 10f, 25f, 45f });
 
 			string[] headers = { "Dia", "Saída", "Chegada", "Km's", "Local", "Motivo" };
 			foreach (var header in headers)
@@ -188,8 +210,9 @@ namespace Gerador_ecxel
 			float totalKM = 0;
 			foreach (var entry in entries)
 			{
-				if (entry[1] != _colaborador) continue;
-				string[] row = {entry[0], "09H00", "18H00", entry[5], entry[3], entry[4] };
+				string status = entry[6];
+				if (status != "Novo" || entry[1] != _colaborador) continue;
+				string[] row = { entry[0], "09H00", "18H00", entry[5], entry[3], entry[4] };
 				foreach (var dataValue in row)
 				{
 					if (int.TryParse(dataValue, out int number) || DateTime.TryParse(dataValue, out DateTime date))
@@ -234,7 +257,7 @@ namespace Gerador_ecxel
 			obsTable.SpacingBefore = 20f;
 			AddCell(obsTable, "Observações:", sectionFont, 70f, "nenhuma");
 			PdfPCell cellObs = new PdfPCell(new Phrase(""))
-			{				
+			{
 				FixedHeight = 70f,
 				BorderWidth = 0.5f,
 			};
@@ -263,8 +286,8 @@ namespace Gerador_ecxel
 				Border = PdfPCell.NO_BORDER
 			};
 			assignTable.AddCell(cellBot);
-
-			iTextSharp.text.Image imgBot = iTextSharp.text.Image.GetInstance("Sources\\Assign.png");
+			imagePath = Path.Combine(sourceDir, "Assign.png");
+			iTextSharp.text.Image imgBot = iTextSharp.text.Image.GetInstance(imagePath);
 			imgBot.ScaleAbsolute(100, 60f);
 			imgBot.SetAbsolutePosition(doc.PageSize.Width - 190, doc.BottomMargin + 125);
 			doc.Add(imgBot);
@@ -272,7 +295,6 @@ namespace Gerador_ecxel
 			doc.Add(new Paragraph("\n"));
 			doc.Add(new Paragraph("Nota: valores recebidos até dia 16 do mês N, serão pagos no mês N, valores recebidos entre dia 17 e 31 do mês N serão pagos no mês N+1", sectionFont));
 			doc.Close();
-			Console.WriteLine("PDF Gerado com sucesso: " + filePath);
 		}
 
 		private void AddCell(PdfPTable table, string text, iTextSharp.text.Font font, float height, string borderType)
@@ -358,7 +380,7 @@ namespace Gerador_ecxel
 			leftCell.HorizontalAlignment = Element.ALIGN_LEFT;
 			leftCell.FixedHeight = 20f;
 
-			PdfPCell rightCell = new PdfPCell(new Phrase((totalKM * 0.36).ToString() + " €", subTitleFont));
+			PdfPCell rightCell = new PdfPCell(new Phrase(Math.Round(totalKM * 0.36, 2).ToString("0.00") + " €", subTitleFont));
 			rightCell.Border = PdfPCell.NO_BORDER;
 			rightCell.HorizontalAlignment = Element.ALIGN_RIGHT;
 			rightCell.FixedHeight = 20f;
@@ -372,19 +394,30 @@ namespace Gerador_ecxel
 
 			doc.Add(outerTable);
 		}
-
 		private void button1_Click(object sender, EventArgs e)
 		{
-			string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Relatorios\\Relatorio_Notion_Teresa Nunes.pdf");
-			if (!File.Exists(filePath))
+			System.Diagnostics.Process.Start("explorer.exe", _folderPath);
+		}
+
+		private void GerarPdf_MouseEnter(object sender, EventArgs e)
+		{
+			((Button)sender).BackColor = Color.FromArgb(7, 43, 101);
+			((Button)sender).ForeColor = Color.White;
+		}
+
+		private void GerarPdf_MouseLeave(object sender, EventArgs e)
+		{
+			((Button)sender).BackColor = Color.LightGray;
+			((Button)sender).ForeColor = Color.Black;
+		}
+
+		private async void AtualizDbButton_Click(object sender, EventArgs e)
+		{
+			if (_notionService == null)
 			{
-				MessageBox.Show("Arquivo PDF não encontrado: " + filePath, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Erro: notionService não foi inicializado.");
 				return;
 			}
-			PdfViewer pdfViewer = new PdfViewer();
-			pdfViewer.Dock = DockStyle.Fill;
-			pdfViewer.Document = PdfiumViewer.PdfDocument.Load(filePath); 
-			panelPDF.Controls.Add(pdfViewer);
 		}
 	}
 }
