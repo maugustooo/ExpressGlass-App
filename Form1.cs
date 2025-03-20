@@ -266,31 +266,64 @@ namespace Gerador_ecxel
 			doc.Add(obsTable);
 
 			PdfPTable assignTable = new PdfPTable(3);
-			assignTable.WidthPercentage = 75;
-			assignTable.SetWidths(new float[] { 30f, 30f, 40f });
+			assignTable.WidthPercentage = 100;
+			assignTable.SetWidths(new float[] { 20f, 25f, 60f});
 			assignTable.HorizontalAlignment = Element.ALIGN_LEFT;
 			assignTable.SpacingBefore = 35;
 			PdfPCell cellBot = new PdfPCell(new Phrase("O Colaborador:", sectionFont))
 			{
-				VerticalAlignment = Element.ALIGN_BOTTOM,
-				FixedHeight = 50,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				FixedHeight = 62f,
 				Border = PdfPCell.NO_BORDER
 			};
 			assignTable.AddCell(cellBot);
-			AddCellUL(assignTable, "", sectionFont, 50, Element.ALIGN_RIGHT);
-			cellBot = new PdfPCell(new Phrase("O Responsável:", sectionFont))
+			PdfPCell middleLineCell = new PdfPCell(new Phrase("__________________", sectionFont))
 			{
+				Border = PdfPCell.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_CENTER,
-				VerticalAlignment = Element.ALIGN_BOTTOM,
-				FixedHeight = 50,
-				Border = PdfPCell.NO_BORDER
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				FixedHeight = 62f
 			};
-			assignTable.AddCell(cellBot);
+			assignTable.AddCell(middleLineCell);
+
 			imagePath = Path.Combine(sourceDir, "Assign.png");
 			iTextSharp.text.Image imgBot = iTextSharp.text.Image.GetInstance(imagePath);
-			imgBot.ScaleAbsolute(100, 60f);
-			imgBot.SetAbsolutePosition(doc.PageSize.Width - 190, doc.BottomMargin + 125);
-			doc.Add(imgBot);
+			imgBot.ScaleAbsolute(100, 60f); // ajusta conforme necessário
+
+			// Subtabela com 2 colunas: texto + imagem
+			PdfPTable innerTable = new PdfPTable(2);
+			innerTable.WidthPercentage = 100;
+			innerTable.SetWidths(new float[] { 60f, 100f});
+
+			// Célula com texto "O Responsável:"
+			PdfPCell textCell = new PdfPCell(new Phrase("O Responsável:", sectionFont))
+			{
+				Border = PdfPCell.NO_BORDER,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				HorizontalAlignment = Element.ALIGN_LEFT,
+				PaddingLeft = 30
+			};
+			innerTable.AddCell(textCell);
+
+			// Célula com imagem
+			PdfPCell imgCell = new PdfPCell(imgBot)
+			{
+				Border = PdfPCell.NO_BORDER,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				Padding = 0
+			};
+			innerTable.AddCell(imgCell);
+
+			// Célula final com innerTable
+			PdfPCell finalCell = new PdfPCell(innerTable)
+			{
+				Border = PdfPCell.NO_BORDER,
+				FixedHeight = 62f,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+			assignTable.AddCell(finalCell);
+
+			// Adiciona a tabela ao documento
 			doc.Add(assignTable);
 			doc.Add(new Paragraph("\n"));
 			doc.Add(new Paragraph("Nota: valores recebidos até dia 16 do mês N, serão pagos no mês N, valores recebidos entre dia 17 e 31 do mês N serão pagos no mês N+1", sectionFont));
