@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using iTextSharp.text;
@@ -8,22 +9,18 @@ namespace Gerador_ecxel
 	public partial class Form1 : Form
 	{
 		private readonly NotionService notionService;
-		private string _colaborador;
-		private string _data;
-		private string _matricula;
-		private string _localidade;
-		private string _motivo;
-		private string _klm;
-		private string _status;
-		private string _loja;
-		private string _cod;
-		private string _folderPath;
-		private NotionService _notionService;
+		private string _colaborador = string.Empty;
+		private string _data = string.Empty;
+		private string _matricula = string.Empty;
+		private string _status = string.Empty;
+		private string _loja = string.Empty;
+		private string _cod = string.Empty;
+		private string _folderPath = string.Empty;
 
 		public Form1()
 		{
 			InitializeComponent();
-			_notionService = new NotionService("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", "1a2a53a0578180849ed2c31ac791c876");
+			notionService = new NotionService("api_key", "database_id");
 		}
 		private async void GerarPdf_Click(object sender, EventArgs e)
 		{
@@ -34,7 +31,17 @@ namespace Gerador_ecxel
 				statusLabel.ForeColor = Color.Blue;
 				progressBar1.Style = ProgressBarStyle.Marquee;
 				progressBar1.Visible = true;
-				List<string[]> entries = await _notionService.GetDatabase();
+				var notionKey = Environment.GetEnvironmentVariable("NOTION_API_KEY", EnvironmentVariableTarget.Machine);
+				var databaseId = Environment.GetEnvironmentVariable("NOTION_DATABASE_ID", EnvironmentVariableTarget.Machine);
+				if (notionKey == null || databaseId == null)
+				{
+					progressBar1.Visible = false;
+					statusLabel.Visible = false;
+					MessageBox.Show("Erro: Chaves de API não foram definidas.");
+					return;
+				}
+				NotionService notionService = new NotionService(notionKey, databaseId);
+				List<string[]> entries = await notionService.GetDatabase();
 				string previousName = "";
 				int pdfCount = 0;
 				statusLabel.Text = "A Gerar PDf`s...";
@@ -43,32 +50,27 @@ namespace Gerador_ecxel
 					_data = entries[i][0];
 					_colaborador = entries[i][1];
 					_matricula = entries[i][2];
-					_localidade = entries[i][3];
-					_motivo = entries[i][4];
-					_klm = entries[i][5];
 					_status = entries[i][6];
 					_cod = entries[i][7];
 					_loja = entries[i][8];
 					if (_colaborador != previousName && _status == "Novo")
 					{
-						await GeneratePdf(entries);
+						GeneratePdf(entries);
 						pdfCount++;
 						previousName = _colaborador;
 					}
 				}
-
 				if (pdfCount <= 0)
 				{
-					MessageBox.Show("Nenhum Dado para gerar", "Erro!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					MessageBox.Show("Nenhum Dado para gerar", "Aviso!", MessageBoxButtons.OK, MessageBoxIcon.Information);
 					progressBar1.Visible = false;
 					statusLabel.Visible = false;
 					return;
 				}
-				progressBar1.Visible = false;
-				PdfDirButton.Visible = true;
 				statusLabel.Visible = false;
+				progressBar1.Visible = false;
 				MessageBox.Show("PDF gerado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
-				await _notionService.UpdateStatus();
+				//await notionService.UpdateStatus();
 			}
 			catch (Exception ex)
 			{
@@ -78,7 +80,7 @@ namespace Gerador_ecxel
 			}
 		}
 
-		public async Task GeneratePdf(List<string[]> entries)
+		public void GeneratePdf(List<string[]> entries)
 		{
 			var baseColor = new BaseColor(75, 85, 87, 255);
 			_folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Relatorios");
@@ -88,7 +90,7 @@ namespace Gerador_ecxel
 			{
 				throw new Exception("Variáveis de nome do arquivo estão nulas ou vazias.");
 			}
-			string filePath = Path.Combine(_folderPath, $"Relatorio_{_colaborador}" + "_" + $"{_data}.pdf");
+			string filePath = Path.Combine(_folderPath, $"Relatorio_{_colaborador}" + "_" + $"{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf");
 			Document doc = new Document(PageSize.A4);
 			if (doc == null)
 				throw new Exception("O documento não foi inicializado corretamente.");
@@ -107,8 +109,6 @@ namespace Gerador_ecxel
 			iTextSharp.text.Font tableHeaderFont = new iTextSharp.text.Font(bfcalibriBIt, 11, iTextSharp.text.Font.BOLD, baseColor);
 			iTextSharp.text.Font tableFont = new iTextSharp.text.Font(bfCalibri, 8, iTextSharp.text.Font.NORMAL, baseColor);
 			iTextSharp.text.Font sectionFont = new iTextSharp.text.Font(bfVerdana, 10, iTextSharp.text.Font.NORMAL, baseColor);
-			iTextSharp.text.Font cellFont = new iTextSharp.text.Font(bfVerdana, 7, iTextSharp.text.Font.NORMAL, baseColor);
-			iTextSharp.text.Font boldFont = new iTextSharp.text.Font(bfcalibriBold, 9, iTextSharp.text.Font.BOLD, baseColor);
 
 			string imagePath = Path.Combine(sourceDir, "logo.jpeg");
 			if (File.Exists(imagePath))
@@ -127,71 +127,27 @@ namespace Gerador_ecxel
 
 			doc.Add(new Paragraph("Identificação: \n\n", subTitleFont));
 
-			PdfPTable identificacaoTable = new PdfPTable(2);
-			identificacaoTable.WidthPercentage = 100;
-			identificacaoTable.SetWidths(new float[] { 30f, 70f });
-			identificacaoTable.HorizontalAlignment = Element.ALIGN_LEFT;
-			AddCell(identificacaoTable, "Utilizador:", sectionFont, 14, "nenhuma");
-			AddCell(identificacaoTable, _colaborador, sectionFont, 14, "cheia");
-			doc.Add(identificacaoTable);
-			doc.Add(new Paragraph("\n"));
+			addTable(doc, 100, new float[] { 30f, 70f }, new (string, string, int, string, string, int?)[]{
+			("Utilizador:", _colaborador, 14, "nenhuma", "cheia", null)
+			}, sectionFont);
 
-			identificacaoTable = new PdfPTable(2);
-			identificacaoTable.WidthPercentage = 60;
-			identificacaoTable.SetWidths(new float[] { 30f, 30f });
-			identificacaoTable.HorizontalAlignment = Element.ALIGN_LEFT;
-			AddCell(identificacaoTable, "Nº Colaborador:", sectionFont, 14f, "nenhuma");
-			AddCellAlign(identificacaoTable, _cod, sectionFont, 14f, "cheia", Element.ALIGN_CENTER);
-			doc.Add(identificacaoTable);
-			doc.Add(new Paragraph("\n"));
-
-			identificacaoTable = new PdfPTable(2);
-			identificacaoTable.WidthPercentage = 60;
-			identificacaoTable.SetWidths(new float[] { 30f, 30f });
-			identificacaoTable.HorizontalAlignment = Element.ALIGN_LEFT;
-			AddCell(identificacaoTable, "Empresa:", sectionFont, 14f, "nenhuma");
-			AddCellAlign(identificacaoTable, "Expressglass SA", sectionFont, 14f, "cheia", Element.ALIGN_CENTER);
-			doc.Add(identificacaoTable);
-			doc.Add(new Paragraph("\n"));
-
-			identificacaoTable = new PdfPTable(2);
-			identificacaoTable.WidthPercentage = 60;
-			identificacaoTable.SetWidths(new float[] { 30f, 30f });
-			identificacaoTable.HorizontalAlignment = Element.ALIGN_LEFT;
-			AddCell(identificacaoTable, "Centro de Custo:", sectionFont, 14f, "nenhuma");
-			AddCell(identificacaoTable, _loja, sectionFont, 14f, "cheia");
-			doc.Add(identificacaoTable);
-			doc.Add(new Paragraph("\n"));
+			addTable(doc, 60, new float[] { 30f, 30f }, new (string, string, int, string, string, int?)[] {
+				("Nº Colaborador:", _cod, 14, "nenhuma", "cheia",  Element.ALIGN_CENTER),
+				("Empresa:", "Expressglass SA", 14, "nenhuma", "cheia",  Element.ALIGN_CENTER),
+				("Centro de Custo:", _loja, 14, "nenhuma", "cheia", null),
+			}, sectionFont);
 
 			doc.Add(new Paragraph("Despesas - Mapa de Km \n\n", subTitleFont));
 
-			identificacaoTable = new PdfPTable(2);
-			identificacaoTable.WidthPercentage = 60;
-			identificacaoTable.SetWidths(new float[] { 30f, 30f });
-			identificacaoTable.HorizontalAlignment = Element.ALIGN_LEFT;
-			AddCell(identificacaoTable, "Data", sectionFont, 14f, "nenhuma");
-			AddCell(identificacaoTable, _data, sectionFont, 14f, "cheia");
-			doc.Add(identificacaoTable);
-			doc.Add(new Paragraph("\n"));
-
-			identificacaoTable = new PdfPTable(2);
-			identificacaoTable.WidthPercentage = 60;
-			identificacaoTable.SetWidths(new float[] { 30f, 30 });
-			identificacaoTable.HorizontalAlignment = Element.ALIGN_LEFT;
-			AddCell(identificacaoTable, "Matrícula:", sectionFont, 14f, "nenhuma");
-			AddCell(identificacaoTable, _matricula, sectionFont, 14f, "cheia");
-			doc.Add(identificacaoTable);
-			doc.Add(new Paragraph("\n"));
-
-			identificacaoTable = new PdfPTable(2);
-			identificacaoTable.WidthPercentage = 100;
-			identificacaoTable.SetWidths(new float[] { 30f, 70f });
-			identificacaoTable.HorizontalAlignment = Element.ALIGN_LEFT;
-			AddCell(identificacaoTable, "Proprietário:", sectionFont, 14f, "nenhuma");
-			AddCell(identificacaoTable, _colaborador, sectionFont, 14f, "cheia");
-			doc.Add(identificacaoTable);
-			doc.Add(new Paragraph("\n"));
-
+			addTable(doc, 60, new float[] { 30f, 30f }, new (string, string, int, string, string, int?)[] {
+				("Data", _data, 14, "nenhuma", "cheia", null),
+				("Matrícula:", _matricula, 14, "nenhuma", "cheia", null),
+			}, sectionFont);
+			
+			
+			addTable(doc, 100, new float[] { 30f, 70f }, new (string, string, int, string, string, int?)[]{
+			("Proprietário:", _colaborador, 14, "nenhuma", "cheia", null)
+			}, sectionFont);
 
 			PdfPTable table = new PdfPTable(6);
 			table.WidthPercentage = 100;
@@ -267,7 +223,7 @@ namespace Gerador_ecxel
 
 			PdfPTable assignTable = new PdfPTable(3);
 			assignTable.WidthPercentage = 100;
-			assignTable.SetWidths(new float[] { 20f, 25f, 60f});
+			assignTable.SetWidths(new float[] { 20f, 25f, 60f });
 			assignTable.HorizontalAlignment = Element.ALIGN_LEFT;
 			assignTable.SpacingBefore = 35;
 			PdfPCell cellBot = new PdfPCell(new Phrase("O Colaborador:", sectionFont))
@@ -288,14 +244,12 @@ namespace Gerador_ecxel
 
 			imagePath = Path.Combine(sourceDir, "Assign.png");
 			iTextSharp.text.Image imgBot = iTextSharp.text.Image.GetInstance(imagePath);
-			imgBot.ScaleAbsolute(100, 60f); // ajusta conforme necessário
+			imgBot.ScaleAbsolute(100, 60f);
 
-			// Subtabela com 2 colunas: texto + imagem
 			PdfPTable innerTable = new PdfPTable(2);
 			innerTable.WidthPercentage = 100;
-			innerTable.SetWidths(new float[] { 60f, 100f});
+			innerTable.SetWidths(new float[] { 60f, 100f });
 
-			// Célula com texto "O Responsável:"
 			PdfPCell textCell = new PdfPCell(new Phrase("O Responsável:", sectionFont))
 			{
 				Border = PdfPCell.NO_BORDER,
@@ -305,7 +259,6 @@ namespace Gerador_ecxel
 			};
 			innerTable.AddCell(textCell);
 
-			// Célula com imagem
 			PdfPCell imgCell = new PdfPCell(imgBot)
 			{
 				Border = PdfPCell.NO_BORDER,
@@ -314,7 +267,6 @@ namespace Gerador_ecxel
 			};
 			innerTable.AddCell(imgCell);
 
-			// Célula final com innerTable
 			PdfPCell finalCell = new PdfPCell(innerTable)
 			{
 				Border = PdfPCell.NO_BORDER,
@@ -323,11 +275,31 @@ namespace Gerador_ecxel
 			};
 			assignTable.AddCell(finalCell);
 
-			// Adiciona a tabela ao documento
 			doc.Add(assignTable);
 			doc.Add(new Paragraph("\n"));
 			doc.Add(new Paragraph("Nota: valores recebidos até dia 16 do mês N, serão pagos no mês N, valores recebidos entre dia 17 e 31 do mês N serão pagos no mês N+1", sectionFont));
 			doc.Close();
+		}
+
+		void addTable(Document doc, float widthPercentage, float[] columnWidths, (string title, string value, int fontSize, string titleBorder, string border, int?)[] data, iTextSharp.text.Font font)
+		{
+			foreach (var (title, valor, fontSize, titleBorder, borderborder, alignment) in data)
+			{
+				PdfPTable table = new PdfPTable(2);
+				table.WidthPercentage = widthPercentage;
+				table.SetWidths(columnWidths);
+				table.HorizontalAlignment = Element.ALIGN_LEFT;
+				
+				AddCell(table, title, font, fontSize, titleBorder);
+
+				if (alignment.HasValue)
+					AddCellAlign(table, valor, font, fontSize, borderborder, alignment.Value);
+				else
+					AddCell(table, valor, font, fontSize, borderborder);
+
+				doc.Add(table);
+				doc.Add(new Paragraph("\n"));
+			}
 		}
 
 		private void AddCell(PdfPTable table, string text, iTextSharp.text.Font font, float height, string borderType)
@@ -442,15 +414,6 @@ namespace Gerador_ecxel
 		{
 			((Button)sender).BackColor = Color.LightGray;
 			((Button)sender).ForeColor = Color.Black;
-		}
-
-		private async void AtualizDbButton_Click(object sender, EventArgs e)
-		{
-			if (_notionService == null)
-			{
-				MessageBox.Show("Erro: notionService não foi inicializado.");
-				return;
-			}
 		}
 	}
 }

@@ -135,7 +135,6 @@
 			AtualizDbButton.TabIndex = 6;
 			AtualizDbButton.Text = "Atualizar Base De Dados";
 			AtualizDbButton.UseVisualStyleBackColor = false;
-			AtualizDbButton.Click += AtualizDbButton_Click;
 			AtualizDbButton.MouseEnter += GerarPdf_MouseEnter;
 			AtualizDbButton.MouseLeave += GerarPdf_MouseLeave;
 			// 
