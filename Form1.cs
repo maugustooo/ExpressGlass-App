@@ -20,7 +20,8 @@ namespace Gerador_ecxel
 		public Form1()
 		{
 			InitializeComponent();
-			notionService = new NotionService("api_key", "database_id");
+			var config = NotionConfigHelper.GetConfig();
+			notionService = new NotionService(config.NotionApiKey, config.NotionDatabaseId);
 		}
 		private async void GerarPdf_Click(object sender, EventArgs e)
 		{
@@ -31,8 +32,9 @@ namespace Gerador_ecxel
 				statusLabel.ForeColor = Color.Blue;
 				progressBar1.Style = ProgressBarStyle.Marquee;
 				progressBar1.Visible = true;
-				var notionKey = Environment.GetEnvironmentVariable("NOTION_API_KEY", EnvironmentVariableTarget.Machine);
-				var databaseId = Environment.GetEnvironmentVariable("NOTION_DATABASE_ID", EnvironmentVariableTarget.Machine);
+				var config = NotionConfigHelper.GetConfig();
+				var notionKey = config.NotionApiKey;
+				var databaseId = config.NotionDatabaseId;
 				if (notionKey == null || databaseId == null)
 				{
 					progressBar1.Visible = false;
@@ -70,7 +72,7 @@ namespace Gerador_ecxel
 				statusLabel.Visible = false;
 				progressBar1.Visible = false;
 				MessageBox.Show("PDF gerado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
-				//await notionService.UpdateStatus();
+				await notionService.UpdateStatus();
 			}
 			catch (Exception ex)
 			{
