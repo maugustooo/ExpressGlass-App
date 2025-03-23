@@ -16,6 +16,7 @@ public static class NotionConfigHelper
 	public static Config GetConfig()
 	{
 		var apiKey = Environment.GetEnvironmentVariable("NOTION_API_KEY", EnvironmentVariableTarget.Machine);
+		apiKey = null;
 		var dbId = Environment.GetEnvironmentVariable("NOTION_DATABASE_ID", EnvironmentVariableTarget.Machine);
 
 		if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(dbId))
@@ -35,9 +36,11 @@ public static class NotionConfigHelper
 			dbId = Prompt("Insira o ID da base de dados do Notion:");
 			if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(dbId))
 			{
-				MessageBox.Show("Erro: Token da API ou ID da base de dados não podem ser vazios.");
+				MessageBox.Show("Erro: Token da API ou ID da base de dados não podem ser vazios.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				if (File.Exists(configFilePath))
+					File.Delete(configFilePath);
 				return null;
-			}
+			} 
 			var config = new Config { NotionApiKey = apiKey, NotionDatabaseId = dbId };
 			File.WriteAllText(configFilePath, JsonConvert.SerializeObject(config, Formatting.Indented));
 		}

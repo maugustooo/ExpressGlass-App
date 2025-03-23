@@ -21,7 +21,14 @@ namespace Gerador_ecxel
 			// see https://aka.ms/applicationconfiguration.
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 			ApplicationConfiguration.Initialize();
-			Application.Run(new Form1());
+			var config = NotionConfigHelper.GetConfig();
+
+			if (config == null)
+			{
+				MessageBox.Show("Erro: As API Keys não foram definidas.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+			Application.Run(new Form1(config));
 		}
 	}
 }

@@ -17,10 +17,9 @@ namespace Gerador_ecxel
 		private string _cod = string.Empty;
 		private string _folderPath = string.Empty;
 
-		public Form1()
+		public Form1(Config config)
 		{
 			InitializeComponent();
-			var config = NotionConfigHelper.GetConfig();
 			notionService = new NotionService(config.NotionApiKey, config.NotionDatabaseId);
 		}
 		private async void GerarPdf_Click(object sender, EventArgs e)
@@ -145,8 +144,8 @@ namespace Gerador_ecxel
 				("Data", _data, 14, "nenhuma", "cheia", null),
 				("Matrícula:", _matricula, 14, "nenhuma", "cheia", null),
 			}, sectionFont);
-			
-			
+
+
 			addTable(doc, 100, new float[] { 30f, 70f }, new (string, string, int, string, string, int?)[]{
 			("Proprietário:", _colaborador, 14, "nenhuma", "cheia", null)
 			}, sectionFont);
@@ -291,7 +290,7 @@ namespace Gerador_ecxel
 				table.WidthPercentage = widthPercentage;
 				table.SetWidths(columnWidths);
 				table.HorizontalAlignment = Element.ALIGN_LEFT;
-				
+
 				AddCell(table, title, font, fontSize, titleBorder);
 
 				if (alignment.HasValue)
@@ -416,6 +415,20 @@ namespace Gerador_ecxel
 		{
 			((Button)sender).BackColor = Color.LightGray;
 			((Button)sender).ForeColor = Color.Black;
+		}
+
+		private void resetData_Click(object sender, EventArgs e)
+		{
+			var configPath = Path.Combine(Application.StartupPath, "notion_config.json");
+
+			if (File.Exists(configPath))
+				File.Delete(configPath);
+
+			var newConfig = NotionConfigHelper.GetConfig();
+			if (newConfig == null)
+				MessageBox.Show("A atualização falhou ou foi cancelada", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			else
+				MessageBox.Show("Atualização feita com sucesso", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 	}
 }

@@ -8,6 +8,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Diagnostics;
+using System.Net;
 
 namespace Gerador_ecxel
 {
@@ -219,7 +220,25 @@ namespace Gerador_ecxel
 				var response = await _client.SendAsync(request);
 				if (!response.IsSuccessStatusCode)
 				{
-					throw new Exception($"Failed to get database: {response.StatusCode}");
+					var responseBody = await response.Content.ReadAsStringAsync();
+
+					string reason;
+					switch (response.StatusCode)
+					{
+						case HttpStatusCode.Unauthorized:
+							reason = "Token da API inválido ou expirado.";
+							break;
+						case HttpStatusCode.Forbidden:
+							reason = "Acesso negado. Verifique se o token tem permissão para acessar este Database ID.";
+							break;
+						case HttpStatusCode.NotFound:
+							reason = "Database ID não encontrado ou não existe.";
+							break;
+						default:
+							reason = $"Erro desconhecido: {response.StatusCode}";
+							break;
+					}
+					throw new Exception($"{reason}\n");
 				}
 
 				var content = JObject.Parse(await response.Content.ReadAsStringAsync());

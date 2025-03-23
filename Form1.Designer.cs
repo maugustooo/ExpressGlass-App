@@ -36,19 +36,32 @@
 			tabControl1 = new TabControl();
 			tabPage1 = new TabPage();
 			panel2 = new Panel();
-			AtualizDbButton = new Button();
+			resetData = new Button();
 			PdfDirButton = new Button();
 			panel1 = new Panel();
 			label1 = new Label();
 			pictureBox1 = new PictureBox();
-			tabPage2 = new TabPage();
 			bindingSource1 = new BindingSource(components);
+			tabPage2 = new TabPage();
+			panel3 = new Panel();
+			button1 = new Button();
+			button2 = new Button();
+			panel4 = new Panel();
+			label2 = new Label();
+			pictureBox2 = new PictureBox();
+			button3 = new Button();
+			label3 = new Label();
+			progressBar2 = new ProgressBar();
 			tabControl1.SuspendLayout();
 			tabPage1.SuspendLayout();
 			panel2.SuspendLayout();
 			panel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
 			((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
+			tabPage2.SuspendLayout();
+			panel3.SuspendLayout();
+			panel4.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
 			SuspendLayout();
 			// 
 			// GerarPdf
@@ -115,28 +128,29 @@
 			// panel2
 			// 
 			panel2.BorderStyle = BorderStyle.FixedSingle;
-			panel2.Controls.Add(AtualizDbButton);
+			panel2.Controls.Add(resetData);
 			panel2.Controls.Add(PdfDirButton);
 			panel2.Location = new Point(6, 89);
 			panel2.Name = "panel2";
 			panel2.Size = new Size(201, 425);
 			panel2.TabIndex = 7;
 			// 
-			// AtualizDbButton
+			// resetData
 			// 
-			AtualizDbButton.BackColor = Color.LightGray;
-			AtualizDbButton.FlatAppearance.BorderSize = 0;
-			AtualizDbButton.FlatAppearance.MouseOverBackColor = Color.Black;
-			AtualizDbButton.FlatStyle = FlatStyle.Flat;
-			AtualizDbButton.Font = new Font("Segoe UI", 13F);
-			AtualizDbButton.Location = new Point(24, 18);
-			AtualizDbButton.Name = "AtualizDbButton";
-			AtualizDbButton.Size = new Size(150, 150);
-			AtualizDbButton.TabIndex = 6;
-			AtualizDbButton.Text = "Atualizar Base De Dados";
-			AtualizDbButton.UseVisualStyleBackColor = false;
-			AtualizDbButton.MouseEnter += GerarPdf_MouseEnter;
-			AtualizDbButton.MouseLeave += GerarPdf_MouseLeave;
+			resetData.BackColor = Color.LightGray;
+			resetData.FlatAppearance.BorderSize = 0;
+			resetData.FlatAppearance.MouseOverBackColor = Color.Black;
+			resetData.FlatStyle = FlatStyle.Flat;
+			resetData.Font = new Font("Segoe UI", 13F);
+			resetData.Location = new Point(24, 18);
+			resetData.Name = "resetData";
+			resetData.Size = new Size(150, 150);
+			resetData.TabIndex = 6;
+			resetData.Text = "Atualizar Dados da API";
+			resetData.UseVisualStyleBackColor = false;
+			resetData.Click += resetData_Click;
+			resetData.MouseEnter += GerarPdf_MouseEnter;
+			resetData.MouseLeave += GerarPdf_MouseLeave;
 			// 
 			// PdfDirButton
 			// 
@@ -191,13 +205,122 @@
 			// 
 			// tabPage2
 			// 
+			tabPage2.BackColor = Color.Gainsboro;
+			tabPage2.BackgroundImageLayout = ImageLayout.None;
+			tabPage2.Controls.Add(panel3);
+			tabPage2.Controls.Add(panel4);
+			tabPage2.Controls.Add(button3);
+			tabPage2.Controls.Add(label3);
+			tabPage2.Controls.Add(progressBar2);
+			tabPage2.Font = new Font("Segoe UI", 25F);
 			tabPage2.Location = new Point(4, 24);
 			tabPage2.Name = "tabPage2";
 			tabPage2.Padding = new Padding(3);
 			tabPage2.Size = new Size(1017, 522);
 			tabPage2.TabIndex = 1;
-			tabPage2.Text = "EXCEL PARA NOTION";
-			tabPage2.UseVisualStyleBackColor = true;
+			tabPage2.Text = "Ler Ecxel";
+			// 
+			// panel3
+			// 
+			panel3.BorderStyle = BorderStyle.FixedSingle;
+			panel3.Controls.Add(button1);
+			panel3.Controls.Add(button2);
+			panel3.Location = new Point(6, 89);
+			panel3.Name = "panel3";
+			panel3.Size = new Size(201, 425);
+			panel3.TabIndex = 7;
+			// 
+			// button1
+			// 
+			button1.BackColor = Color.LightGray;
+			button1.FlatAppearance.BorderSize = 0;
+			button1.FlatAppearance.MouseOverBackColor = Color.Black;
+			button1.FlatStyle = FlatStyle.Flat;
+			button1.Font = new Font("Segoe UI", 13F);
+			button1.Location = new Point(24, 18);
+			button1.Name = "button1";
+			button1.Size = new Size(150, 150);
+			button1.TabIndex = 6;
+			button1.Text = "Atualizar Dados da API";
+			button1.UseVisualStyleBackColor = false;
+			// 
+			// button2
+			// 
+			button2.BackColor = Color.LightGray;
+			button2.FlatAppearance.BorderSize = 0;
+			button2.FlatAppearance.MouseOverBackColor = Color.Black;
+			button2.FlatStyle = FlatStyle.Flat;
+			button2.Font = new Font("Segoe UI", 13F);
+			button2.Location = new Point(24, 245);
+			button2.Name = "button2";
+			button2.Size = new Size(150, 150);
+			button2.TabIndex = 5;
+			button2.Text = "Abrir Pasta Dos PDF´S";
+			button2.UseVisualStyleBackColor = false;
+			// 
+			// panel4
+			// 
+			panel4.BackColor = SystemColors.HotTrack;
+			panel4.Controls.Add(label2);
+			panel4.Controls.Add(pictureBox2);
+			panel4.Dock = DockStyle.Top;
+			panel4.Location = new Point(3, 3);
+			panel4.Name = "panel4";
+			panel4.Size = new Size(1011, 80);
+			panel4.TabIndex = 6;
+			// 
+			// label2
+			// 
+			label2.AutoSize = true;
+			label2.BackColor = Color.FromArgb(7, 43, 101);
+			label2.Font = new Font("Segoe UI", 24.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+			label2.ForeColor = Color.Transparent;
+			label2.Location = new Point(432, 13);
+			label2.Name = "label2";
+			label2.Size = new Size(477, 45);
+			label2.TabIndex = 7;
+			label2.Text = "ExpressGlass - Mapas de KLM";
+			// 
+			// pictureBox2
+			// 
+			pictureBox2.BackColor = Color.FromArgb(7, 43, 101);
+			pictureBox2.Dock = DockStyle.Fill;
+			pictureBox2.Image = (Image)resources.GetObject("pictureBox2.Image");
+			pictureBox2.Location = new Point(0, 0);
+			pictureBox2.Name = "pictureBox2";
+			pictureBox2.Size = new Size(1011, 80);
+			pictureBox2.TabIndex = 0;
+			pictureBox2.TabStop = false;
+			// 
+			// button3
+			// 
+			button3.BackColor = Color.Transparent;
+			button3.Font = new Font("Segoe UI", 15F);
+			button3.Location = new Point(450, 137);
+			button3.Name = "button3";
+			button3.Size = new Size(328, 66);
+			button3.TabIndex = 0;
+			button3.Text = "Gerar pdf";
+			button3.UseVisualStyleBackColor = false;
+			// 
+			// label3
+			// 
+			label3.AutoSize = true;
+			label3.Font = new Font("Segoe UI", 23F);
+			label3.Location = new Point(473, 302);
+			label3.Name = "label3";
+			label3.Size = new Size(0, 42);
+			label3.TabIndex = 3;
+			label3.TextAlign = ContentAlignment.MiddleCenter;
+			label3.Visible = false;
+			// 
+			// progressBar2
+			// 
+			progressBar2.Location = new Point(450, 403);
+			progressBar2.Name = "progressBar2";
+			progressBar2.Size = new Size(328, 59);
+			progressBar2.TabIndex = 4;
+			progressBar2.Visible = false;
 			// 
 			// Form1
 			// 
@@ -216,6 +339,12 @@
 			panel1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
 			((System.ComponentModel.ISupportInitialize)bindingSource1).EndInit();
+			tabPage2.ResumeLayout(false);
+			tabPage2.PerformLayout();
+			panel3.ResumeLayout(false);
+			panel4.ResumeLayout(false);
+			panel4.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
 			ResumeLayout(false);
 		}
 
@@ -226,13 +355,22 @@
 		private ProgressBar progressBar1;
 		private TabControl tabControl1;
 		private TabPage tabPage1;
-		private TabPage tabPage2;
 		private Button PdfDirButton;
 		private Panel panel1;
 		private Label label1;
 		private PictureBox pictureBox1;
 		private BindingSource bindingSource1;
 		private Panel panel2;
-		private Button AtualizDbButton;
+		private Button resetData;
+		private TabPage tabPage2;
+		private Panel panel3;
+		private Button button1;
+		private Button button2;
+		private Panel panel4;
+		private Label label2;
+		private PictureBox pictureBox2;
+		private Button button3;
+		private Label label3;
+		private ProgressBar progressBar2;
 	}
 }
