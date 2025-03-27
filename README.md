@@ -1,4 +1,7 @@
 # ExpressGlass-App
+![image](https://github.com/user-attachments/assets/10b462b0-67de-40d4-88b2-d219445ac76e)
+
+---
 
 # ![Portuguese Flag](https://github.com/madebybowtie/FlagKit/raw/master/Assets/PNG/PT@2x.png?raw=true) Versão Portuguesa
 
@@ -47,7 +50,3 @@ The data is stored in a [Notion Database](https://www.notion.com).
 
 ## 🔧 Development and Maintenance
 This project was created to meet my father's work needs at **ExpressGlass**. Future improvements and maintenance will be carried out as needed.
-
-## 🖼️ Visualização da Aplicação
-![image](https://github.com/user-attachments/assets/10b462b0-67de-40d4-88b2-d219445ac76e)
-
