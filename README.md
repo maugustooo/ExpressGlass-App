@@ -1,5 +1,7 @@
 # ExpressGlass-App
 
+# ![Portuguese Flag](https://github.com/madebybowtie/FlagKit/raw/master/Assets/PNG/PT@2x.png?raw=true) Versão Portuguesa
+
 ## 📌 Descrição
 O **ExpressGlass PDF-App** é uma aplicação requesitada pelo meu pai desenvolvida especificamente para o pedido do mesmo em .NET C# Windows Forms para automatizar o trabalho na geração de PDFs baseados em mapas de Km e atualização de dados através de um ficheiro excel.
 O objetivo é facilitar o trabalho, eliminando a necessidade de gerar os relatórios e atualizar dados manualmente.
@@ -23,7 +25,7 @@ Este projeto foi criado para atender às necessidades do meu pai para trabalho n
 
 ---
 
-# English Version
+# ![English Flag](https://github.com/madebybowtie/FlagKit/raw/master/Assets/PNG/GB@2x.png?raw=true) English Version
 
 ## 📌 Description
 The **ExpressGlass PDF-App** is an application requested by my father, specifically developed to meet his needs in .NET C# Windows Forms to automate the work of generating PDFs based on Km maps and updating data through an Excel file.
