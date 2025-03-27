@@ -41,7 +41,6 @@
 			panel1 = new Panel();
 			label1 = new Label();
 			pictureBox1 = new PictureBox();
-			bindingSource1 = new BindingSource(components);
 			tabPage2 = new TabPage();
 			panel3 = new Panel();
 			button1 = new Button();
@@ -52,16 +51,17 @@
 			button3 = new Button();
 			label3 = new Label();
 			progressBar2 = new ProgressBar();
+			bindingSource1 = new BindingSource(components);
 			tabControl1.SuspendLayout();
 			tabPage1.SuspendLayout();
 			panel2.SuspendLayout();
 			panel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
-			((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
 			tabPage2.SuspendLayout();
 			panel3.SuspendLayout();
 			panel4.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
+			((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
 			SuspendLayout();
 			// 
 			// GerarPdf
@@ -300,8 +300,9 @@
 			button3.Name = "button3";
 			button3.Size = new Size(328, 66);
 			button3.TabIndex = 0;
-			button3.Text = "Gerar pdf";
+			button3.Text = "Importar Excel";
 			button3.UseVisualStyleBackColor = false;
+			button3.Click += button3_Click;
 			// 
 			// label3
 			// 
@@ -338,13 +339,13 @@
 			panel1.ResumeLayout(false);
 			panel1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
-			((System.ComponentModel.ISupportInitialize)bindingSource1).EndInit();
 			tabPage2.ResumeLayout(false);
 			tabPage2.PerformLayout();
 			panel3.ResumeLayout(false);
 			panel4.ResumeLayout(false);
 			panel4.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
+			((System.ComponentModel.ISupportInitialize)bindingSource1).EndInit();
 			ResumeLayout(false);
 		}
 

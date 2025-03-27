@@ -430,5 +430,37 @@ namespace Gerador_ecxel
 			else
 				MessageBox.Show("Atualização feita com sucesso", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
+
+		private void button3_Click(object sender, EventArgs e)
+		{
+			OpenFileDialog openFileDialog = new OpenFileDialog
+			{
+				Filter = "Excel files (*.xlsx;*.xls)|*.xlsx;*.xls",
+				RestoreDirectory = true
+			};
+			if (openFileDialog.ShowDialog() == DialogResult.OK)
+			{
+				string excelPath = openFileDialog.FileName;
+				MessageBox.Show("Ficheiro selecionado: " + excelPath,"Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+				try
+				{
+					ProcessStartInfo psi = new ProcessStartInfo
+					{
+						FileName = excelPath,
+						UseShellExecute = true
+					};
+					Process.Start(psi);
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show("Erro ao ler o ficheiro Excel: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+			}
+			else
+			{
+				MessageBox.Show("Nenhum ficheiro selecionado","Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
 	}
 }
