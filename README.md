@@ -47,4 +47,5 @@ The data is stored in a [Notion Database](https://www.notion.com).
 This project was created to meet my father's work needs at **ExpressGlass**. Future improvements and maintenance will be carried out as needed.
 
 ## 🖼️ Visualização da Aplicação
-![Capturar](https://github.com/user-attachments/assets/54dd3865-7e01-4dca-a893-01a6d4172493)
+![image](https://github.com/user-attachments/assets/10b462b0-67de-40d4-88b2-d219445ac76e)
+
