@@ -1,6 +1,7 @@
+using System.Data;
 using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
+using System.Windows.Forms;
+using ExcelDataReader;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 
@@ -16,7 +17,7 @@ namespace Gerador_ecxel
 		private string _loja = string.Empty;
 		private string _cod = string.Empty;
 		private string _folderPath = string.Empty;
-
+		private DataTable _dataTable;
 		public Form1(Config config)
 		{
 			InitializeComponent();
@@ -430,7 +431,6 @@ namespace Gerador_ecxel
 			else
 				MessageBox.Show("Atualização feita com sucesso", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
-
 		private void button3_Click(object sender, EventArgs e)
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog
@@ -441,16 +441,9 @@ namespace Gerador_ecxel
 			if (openFileDialog.ShowDialog() == DialogResult.OK)
 			{
 				string excelPath = openFileDialog.FileName;
-				MessageBox.Show("Ficheiro selecionado: " + excelPath,"Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
 				try
 				{
-					ProcessStartInfo psi = new ProcessStartInfo
-					{
-						FileName = excelPath,
-						UseShellExecute = true
-					};
-					Process.Start(psi);
+					loadData(excelPath);
 				}
 				catch (Exception ex)
 				{
@@ -459,8 +452,93 @@ namespace Gerador_ecxel
 			}
 			else
 			{
-				MessageBox.Show("Nenhum ficheiro selecionado","Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Nenhum ficheiro selecionado", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
+		}
+
+		private void loadData(string filePath)
+		{
+			using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
+			{
+				using (var reader = ExcelReaderFactory.CreateReader(stream))
+				{
+					var result = reader.AsDataSet(new ExcelDataSetConfiguration
+					{
+						ConfigureDataTable = _ => new ExcelDataTableConfiguration { UseHeaderRow = true }
+					});
+
+					_dataTable = result.Tables[0];
+
+					var lojas = _dataTable.AsEnumerable()
+						.Skip(10)
+						  .Select(row => new
+						  {
+							  B = row.IsNull(1) ? "" : row[1].ToString(),
+							  C = row.IsNull(2) ? "" : row[2].ToString(),
+							  D = row.IsNull(3) ? "" : row[3].ToString(),
+							  E = row.IsNull(4) ? "" : row[4].ToString(),
+							  F = row.IsNull(5) ? "" : row[5].ToString(),
+							  I = row.IsNull(8) ? "" : row[8].ToString()
+						  })
+						.Where(name => !string.IsNullOrEmpty(name.B))
+						.Distinct()
+						.ToList();
+
+					listBoxStores.Items.Clear();
+					foreach (var loja in lojas)
+					{
+						listBoxStores.Items.Add(loja.B);
+					}
+				}
+			}
+		}
+
+
+		private void buttonFilter_Click(object sender, EventArgs e)
+		{
+			var lojasSelecionadas = listBoxStores.CheckedItems.Cast<string>().ToList();
+			if (lojasSelecionadas.Count == 0)
+			{
+				MessageBox.Show("Selecione pelo menos uma loja.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				return;
+			}
+
+			var dadosFiltrados = _dataTable.AsEnumerable()
+				.Skip(10)
+				.Where(row => lojasSelecionadas.Contains(row.Field<string>(1)?.Trim() ?? ""))
+				.Select(row => new
+				{
+					  B = row.IsNull(1) ? "" : row[1].ToString(),
+					  C = row.IsNull(2) ? "" : row[2].ToString(),
+					  D = row.IsNull(3) ? "" : row[3].ToString(),
+					  E = row.IsNull(4) ? "" : row[4].ToString(),
+					  F = row.IsNull(5) ? "" : row[5].ToString(),
+					  I = row.IsNull(8) ? "" : row[8].ToString()
+				})
+				.ToList();
+			if (dadosFiltrados.Count == 0)
+			{
+				MessageBox.Show("Nenhum dado encontrado para os filtros selecionados.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				return;
+			}
+			dataGridView1.DataSource = dadosFiltrados;
+			foreach (DataGridViewColumn col in dataGridView1.Columns)
+			{
+				col.Visible = col.Index >= 0 && col.Index <= 5;
+				col.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+				col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+			}
+			dataGridView1.RowTemplate.Height = 30;
+			dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
 		}
 	}
 }
+
+//{
+//	B = row.Field<string>(1),
+//							C = row.Field<double>(2),
+//							D = row.Field<double>(3),
+//							E = row.Field<double>(4),
+//							F = row.Field<double>(5),
+//							I = row.Field<double>(8)
+//						})

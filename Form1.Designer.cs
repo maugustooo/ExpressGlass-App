@@ -42,6 +42,9 @@
 			label1 = new Label();
 			pictureBox1 = new PictureBox();
 			tabPage2 = new TabPage();
+			listBoxStores = new CheckedListBox();
+			dataGridView1 = new DataGridView();
+			buttonFilter = new Button();
 			panel3 = new Panel();
 			button1 = new Button();
 			button2 = new Button();
@@ -49,8 +52,6 @@
 			label2 = new Label();
 			pictureBox2 = new PictureBox();
 			button3 = new Button();
-			label3 = new Label();
-			progressBar2 = new ProgressBar();
 			bindingSource1 = new BindingSource(components);
 			tabControl1.SuspendLayout();
 			tabPage1.SuspendLayout();
@@ -58,6 +59,7 @@
 			panel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
 			tabPage2.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
 			panel3.SuspendLayout();
 			panel4.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
@@ -105,7 +107,7 @@
 			tabControl1.Location = new Point(0, 0);
 			tabControl1.Name = "tabControl1";
 			tabControl1.SelectedIndex = 0;
-			tabControl1.Size = new Size(1025, 550);
+			tabControl1.Size = new Size(1279, 550);
 			tabControl1.TabIndex = 5;
 			// 
 			// tabPage1
@@ -121,7 +123,7 @@
 			tabPage1.Location = new Point(4, 24);
 			tabPage1.Name = "tabPage1";
 			tabPage1.Padding = new Padding(3);
-			tabPage1.Size = new Size(1017, 522);
+			tabPage1.Size = new Size(1271, 522);
 			tabPage1.TabIndex = 0;
 			tabPage1.Text = "GERAR PDF";
 			// 
@@ -177,7 +179,7 @@
 			panel1.Dock = DockStyle.Top;
 			panel1.Location = new Point(3, 3);
 			panel1.Name = "panel1";
-			panel1.Size = new Size(1011, 80);
+			panel1.Size = new Size(1265, 80);
 			panel1.TabIndex = 6;
 			// 
 			// label1
@@ -199,7 +201,7 @@
 			pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
 			pictureBox1.Location = new Point(0, 0);
 			pictureBox1.Name = "pictureBox1";
-			pictureBox1.Size = new Size(1011, 80);
+			pictureBox1.Size = new Size(1265, 80);
 			pictureBox1.TabIndex = 0;
 			pictureBox1.TabStop = false;
 			// 
@@ -207,18 +209,48 @@
 			// 
 			tabPage2.BackColor = Color.Gainsboro;
 			tabPage2.BackgroundImageLayout = ImageLayout.None;
+			tabPage2.Controls.Add(listBoxStores);
+			tabPage2.Controls.Add(dataGridView1);
+			tabPage2.Controls.Add(buttonFilter);
 			tabPage2.Controls.Add(panel3);
 			tabPage2.Controls.Add(panel4);
 			tabPage2.Controls.Add(button3);
-			tabPage2.Controls.Add(label3);
-			tabPage2.Controls.Add(progressBar2);
 			tabPage2.Font = new Font("Segoe UI", 25F);
 			tabPage2.Location = new Point(4, 24);
 			tabPage2.Name = "tabPage2";
 			tabPage2.Padding = new Padding(3);
-			tabPage2.Size = new Size(1017, 522);
+			tabPage2.Size = new Size(1271, 522);
 			tabPage2.TabIndex = 1;
 			tabPage2.Text = "Ler Ecxel";
+			// 
+			// listBoxStores
+			// 
+			listBoxStores.CheckOnClick = true;
+			listBoxStores.FormattingEnabled = true;
+			listBoxStores.Location = new Point(224, 134);
+			listBoxStores.Name = "listBoxStores";
+			listBoxStores.Size = new Size(351, 98);
+			listBoxStores.TabIndex = 11;
+			// 
+			// dataGridView1
+			// 
+			dataGridView1.AllowUserToAddRows = false;
+			dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+			dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			dataGridView1.Location = new Point(224, 237);
+			dataGridView1.Name = "dataGridView1";
+			dataGridView1.Size = new Size(1014, 259);
+			dataGridView1.TabIndex = 10;
+			// 
+			// buttonFilter
+			// 
+			buttonFilter.Location = new Point(581, 134);
+			buttonFilter.Name = "buttonFilter";
+			buttonFilter.Size = new Size(140, 51);
+			buttonFilter.TabIndex = 9;
+			buttonFilter.Text = "Filtrar";
+			buttonFilter.UseVisualStyleBackColor = true;
+			buttonFilter.Click += buttonFilter_Click;
 			// 
 			// panel3
 			// 
@@ -266,7 +298,7 @@
 			panel4.Dock = DockStyle.Top;
 			panel4.Location = new Point(3, 3);
 			panel4.Name = "panel4";
-			panel4.Size = new Size(1011, 80);
+			panel4.Size = new Size(1265, 80);
 			panel4.TabIndex = 6;
 			// 
 			// label2
@@ -288,7 +320,7 @@
 			pictureBox2.Image = (Image)resources.GetObject("pictureBox2.Image");
 			pictureBox2.Location = new Point(0, 0);
 			pictureBox2.Name = "pictureBox2";
-			pictureBox2.Size = new Size(1011, 80);
+			pictureBox2.Size = new Size(1265, 80);
 			pictureBox2.TabIndex = 0;
 			pictureBox2.TabStop = false;
 			// 
@@ -296,7 +328,7 @@
 			// 
 			button3.BackColor = Color.Transparent;
 			button3.Font = new Font("Segoe UI", 15F);
-			button3.Location = new Point(450, 137);
+			button3.Location = new Point(866, 108);
 			button3.Name = "button3";
 			button3.Size = new Size(328, 66);
 			button3.TabIndex = 0;
@@ -304,30 +336,11 @@
 			button3.UseVisualStyleBackColor = false;
 			button3.Click += button3_Click;
 			// 
-			// label3
-			// 
-			label3.AutoSize = true;
-			label3.Font = new Font("Segoe UI", 23F);
-			label3.Location = new Point(473, 302);
-			label3.Name = "label3";
-			label3.Size = new Size(0, 42);
-			label3.TabIndex = 3;
-			label3.TextAlign = ContentAlignment.MiddleCenter;
-			label3.Visible = false;
-			// 
-			// progressBar2
-			// 
-			progressBar2.Location = new Point(450, 403);
-			progressBar2.Name = "progressBar2";
-			progressBar2.Size = new Size(328, 59);
-			progressBar2.TabIndex = 4;
-			progressBar2.Visible = false;
-			// 
 			// Form1
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(1025, 550);
+			ClientSize = new Size(1279, 550);
 			Controls.Add(tabControl1);
 			Icon = (Icon)resources.GetObject("$this.Icon");
 			Name = "Form1";
@@ -340,7 +353,7 @@
 			panel1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
 			tabPage2.ResumeLayout(false);
-			tabPage2.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
 			panel3.ResumeLayout(false);
 			panel4.ResumeLayout(false);
 			panel4.PerformLayout();
@@ -371,7 +384,8 @@
 		private Label label2;
 		private PictureBox pictureBox2;
 		private Button button3;
-		private Label label3;
-		private ProgressBar progressBar2;
+		private Button buttonFilter;
+		private CheckedListBox listBoxStores;
+		private DataGridView dataGridView1;
 	}
 }
