@@ -1,5 +1,6 @@
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows.Forms;
 using ExcelDataReader;
 using iTextSharp.text;
@@ -7,8 +8,26 @@ using iTextSharp.text.pdf;
 
 namespace Gerador_ecxel
 {
+
 	public partial class Form1 : Form
 	{
+		public class FaturadoData
+		{
+			public string loja { get; set; }
+			public double faturados { get; set; }
+			public double fte { get; set; }
+			public double objAoDia { get; set; }
+			public double objMes { get; set; }
+			public double taxRep { get; set; }
+		}
+
+		public class ComplementarData
+		{
+			public string lojas { get; set; }
+			public double vaps { get; set; }
+			public double escovas { get; set; }
+			public double escovasPercent { get; set; }
+		}
 		private readonly NotionService notionService;
 		private string _colaborador = string.Empty;
 		private string _data = string.Empty;
@@ -431,7 +450,7 @@ namespace Gerador_ecxel
 			else
 				MessageBox.Show("Atualização feita com sucesso", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
-		private void button3_Click(object sender, EventArgs e)
+		private async void button3_Click(object sender, EventArgs e)
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog
 			{
@@ -443,7 +462,19 @@ namespace Gerador_ecxel
 				string excelPath = openFileDialog.FileName;
 				try
 				{
-					loadData(excelPath);
+					var dados = loadData(excelPath);
+
+					var faturados = (List<FaturadoData>)dados["faturados"];
+					var complementares = (List<ComplementarData>)dados["complementares"];
+					string mes = (string)dados["mes"];
+					listBoxStores.Items.Clear();
+					foreach (var loja in faturados)
+					{
+						listBoxStores.Items.Add(loja.loja);
+					}
+					await notionService.UpdateNotionDatabase(faturados, complementares, mes);
+
+					MessageBox.Show("Dados atualizados no Notion!");
 				}
 				catch (Exception ex)
 				{
@@ -455,9 +486,46 @@ namespace Gerador_ecxel
 				MessageBox.Show("Nenhum ficheiro selecionado", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
-
-		private void loadData(string filePath)
+		private static double TryRound(DataRow row, int columnIndex, int decimalPlaces)
 		{
+			if (row.IsNull(columnIndex)) return 0;
+
+			var rawValue = row[columnIndex]?.ToString()?.Trim();
+			if (string.IsNullOrWhiteSpace(rawValue)) return 0;
+
+			double value;
+
+			if (columnIndex == 8 || columnIndex == 7)
+			{
+				if (double.TryParse(rawValue, NumberStyles.Any, new CultureInfo("pt-PT"), out value))
+				{
+					value *= 100;
+					return Math.Round(value, decimalPlaces);
+				}
+
+				if (double.TryParse(rawValue, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+				{
+					return Math.Round(value, decimalPlaces);
+				}
+			}
+			if (double.TryParse(rawValue, NumberStyles.Any, new CultureInfo("pt-PT"), out value))
+			{
+				return Math.Round(value, decimalPlaces);
+			}
+
+			if (double.TryParse(rawValue, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+			{
+				return Math.Round(value, decimalPlaces);
+			}
+			return 0;
+		}
+
+		private Dictionary<string, object> loadData(string filePath)
+		{
+			var faturadosList = new List<FaturadoData>();
+			var complementaresList = new List<ComplementarData>();
+			string mes = "";
+
 			using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
 			{
 				using (var reader = ExcelReaderFactory.CreateReader(stream))
@@ -467,32 +535,63 @@ namespace Gerador_ecxel
 						ConfigureDataTable = _ => new ExcelDataTableConfiguration { UseHeaderRow = true }
 					});
 
-					_dataTable = result.Tables[0];
-
-					var lojas = _dataTable.AsEnumerable()
+					var faturadosTable = result.Tables["faturados"];
+					if (faturadosTable != null)
+					{
+						for (int linha = 6; linha <= 7; linha++)
+						{
+							for (int coluna = 1; coluna <= 2; coluna++)
+							{
+								if (!faturadosTable.Rows[linha].IsNull(coluna))
+								{
+									mes = faturadosTable.Rows[linha][coluna]?.ToString()?.Trim() ?? "";
+									if (!string.IsNullOrWhiteSpace(mes))
+										break;
+								}
+							}
+							if (!string.IsNullOrWhiteSpace(mes))
+								break;
+						}
+						faturadosList = faturadosTable.AsEnumerable()
 						.Skip(10)
-						  .Select(row => new
-						  {
-							  B = row.IsNull(1) ? "" : row[1].ToString(),
-							  C = row.IsNull(2) ? "" : row[2].ToString(),
-							  D = row.IsNull(3) ? "" : row[3].ToString(),
-							  E = row.IsNull(4) ? "" : row[4].ToString(),
-							  F = row.IsNull(5) ? "" : row[5].ToString(),
-							  I = row.IsNull(8) ? "" : row[8].ToString()
-						  })
-						.Where(name => !string.IsNullOrEmpty(name.B))
+						.Select(static row => new FaturadoData
+						{
+							loja = row.IsNull(1) ? string.Empty : row[1]?.ToString() ?? string.Empty,
+							faturados = TryRound(row, 2, 1),
+							fte = TryRound(row, 3, 1),
+							objAoDia = TryRound(row, 4,0),
+							objMes = TryRound(row, 5, 0),
+							taxRep = TryRound(row, 8, 2)
+
+						})
+						.Where(data => !string.IsNullOrEmpty(data.loja))
 						.Distinct()
 						.ToList();
 
-					listBoxStores.Items.Clear();
-					foreach (var loja in lojas)
+					}
+					var complementaresTable = result.Tables["complementares"];
+					if (complementaresTable != null)
 					{
-						listBoxStores.Items.Add(loja.B);
+						complementaresList = complementaresTable.AsEnumerable()
+						.Skip(10)
+						.Select(row => new ComplementarData
+						{
+							lojas = row.IsNull(2) ? string.Empty : row[2]?.ToString() ?? string.Empty,
+							vaps = TryRound(row, 3, 1),
+							escovas = TryRound(row, 6, 1),
+							escovasPercent = TryRound(row, 7, 2)
+						})
+						.ToList();
 					}
 				}
 			}
+			return new Dictionary<string, object>
+			{
+				{"mes", mes },
+				{"faturados", faturadosList},
+				{"complementares", complementaresList}
+			};
 		}
-
 
 		private void buttonFilter_Click(object sender, EventArgs e)
 		{
@@ -533,12 +632,3 @@ namespace Gerador_ecxel
 		}
 	}
 }
-
-//{
-//	B = row.Field<string>(1),
-//							C = row.Field<double>(2),
-//							D = row.Field<double>(3),
-//							E = row.Field<double>(4),
-//							F = row.Field<double>(5),
-//							I = row.Field<double>(8)
-//						})

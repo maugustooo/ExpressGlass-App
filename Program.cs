@@ -16,6 +16,11 @@ namespace Gerador_ecxel
 		//static extern bool AllocConsole();
 		static void Main()
 		{
+			FileStream fs = new FileStream("log.txt", FileMode.Append, FileAccess.Write);
+			StreamWriter sw = new StreamWriter(fs);
+			sw.AutoFlush = true;
+			Console.SetOut(sw);
+			Console.SetError(sw);
 			//AllocConsole();
 			// To customize application configuration such as set high DPI settings or default font,
 			// see https://aka.ms/applicationconfiguration.

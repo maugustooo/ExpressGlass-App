@@ -9,6 +9,9 @@ using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Diagnostics;
 using System.Net;
+using static Gerador_ecxel.Form1;
+using System.util;
+using System.Globalization;
 
 namespace Gerador_ecxel
 {
@@ -39,6 +42,195 @@ namespace Gerador_ecxel
 
 			return result;
 		}
+
+		public async Task<string> GetLojaUUID(string lojaNome)
+		{
+			string databaseId = "19ea53a05781801a9d6aff3a8e8d5a10";
+			string url = $"https://api.notion.com/v1/databases/{databaseId}/query";
+			using (HttpClient _client = new HttpClient())
+			{
+				_client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_token}");
+				_client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
+
+				var query = new
+				{
+					filter = new
+					{
+						property = "Loja",
+						title = new
+						{
+							equals = lojaNome
+						}
+					}
+				};
+
+				var jsonBody = JsonConvert.SerializeObject(query);
+				var request = new HttpRequestMessage(HttpMethod.Post, url)
+				{
+					Content = new StringContent(jsonBody, Encoding.UTF8, "application/json")
+				};
+
+				var response = await _client.SendAsync(request);
+				string responseContent = await response.Content.ReadAsStringAsync();
+				if (!response.IsSuccessStatusCode)
+				{
+					Console.WriteLine($"Erro ao buscar UUID da loja {lojaNome}: {response.StatusCode}");
+					Console.WriteLine($"Detalhes do erro: {responseContent}");
+					return null;
+				}
+
+				var jsonResponse = JObject.Parse(responseContent);
+				var results = jsonResponse["results"] as JArray;
+
+				if (results != null && results.Count > 0)
+				{
+					return results[0]["id"]?.ToString();
+				}
+			}
+
+			return null;
+		}
+
+		public async Task UpdateNotionDatabase(List<FaturadoData> faturados, List<ComplementarData> complementares, string mes)
+		{
+			using (HttpClient _client = new HttpClient())
+			{
+				_client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_token}");
+				_client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
+
+				string databaseId = "1b2a53a0578180af933ac9170668e0bb";
+				string url = "https://api.notion.com/v1/pages";
+
+				var todasLojas = faturados.Select(f => f.loja)
+					.Union(complementares.Select(c => c.lojas))
+					.Distinct();
+
+				foreach (var loja in todasLojas)
+				{
+					string lojaUUID = await GetLojaUUID(loja);
+					if (string.IsNullOrEmpty(lojaUUID))
+					{
+						continue;
+					}
+
+					var faturado = faturados.FirstOrDefault(f => f.loja == loja);
+					var complementar = complementares.FirstOrDefault(c => c.lojas == loja);
+
+					var properties = new Dictionary<string, object>
+					{
+						["Loja"] = new
+						{
+							relation = new[] { new { id = lojaUUID } }
+						},
+						["Mês"] = new
+						{
+							rich_text = new[]
+							{
+								new
+								{
+									text = new { content = mes }
+								}
+							}
+						}
+					};
+
+					if (faturado != null)
+					{
+						properties["Faturados"] = new { number = faturado.faturados };
+						properties["FTE"] = new { number = faturado.fte };
+						properties["Obj.Dia"] = new { number = faturado.objAoDia };
+						properties["Obj.Mes"] = new { number = faturado.objMes };
+						properties["TX REP %"] = new { number = faturado.taxRep };
+					}
+					if (complementar != null)
+					{
+						properties["VAPS"] = new { number = complementar.vaps };
+						properties["Escovas %"] = new { number = complementar.escovasPercent };
+					}
+
+					string existingPageId = await BuscarPaginaExistente(databaseId, lojaUUID, mes);
+
+					if (existingPageId != null)
+					{
+						string patchUrl = $"https://api.notion.com/v1/pages/{existingPageId}";
+						var updateRequest = new HttpRequestMessage(HttpMethod.Patch, patchUrl)
+						{
+							Content = new StringContent(JsonConvert.SerializeObject(new { properties }), Encoding.UTF8, "application/json")
+						};
+
+						var updateResponse = await _client.SendAsync(updateRequest);
+						string updateContent = await updateResponse.Content.ReadAsStringAsync();
+					}
+					else
+					{
+						var createBody = new
+						{
+							parent = new { database_id = databaseId },
+							properties = properties
+						};
+
+						var request = new HttpRequestMessage(HttpMethod.Post, url)
+						{
+							Content = new StringContent(JsonConvert.SerializeObject(createBody), Encoding.UTF8, "application/json")
+						};
+
+						var response = await _client.SendAsync(request);
+						string responseContent = await response.Content.ReadAsStringAsync();
+					}
+				}
+			}
+		}
+
+		private async Task<string?> BuscarPaginaExistente(string databaseId, string lojaId, string mes)
+		{
+			using (var client = new HttpClient())
+			{
+				client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_token}");
+				client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
+
+				var filter = new
+				{
+					filter = new
+					{
+						and = new object[]
+						{
+					new
+					{
+						property = "Loja",
+						relation = new { contains = lojaId }
+					},
+					new
+					{
+						property = "Mês",
+						rich_text = new { equals = mes }
+					}
+						}
+					}
+				};
+
+				string json = JsonConvert.SerializeObject(filter);
+				var response = await client.PostAsync(
+					"https://api.notion.com/v1/databases/" + databaseId + "/query",
+					new StringContent(json, Encoding.UTF8, "application/json")
+				);
+
+				var content = await response.Content.ReadAsStringAsync();
+				if (!response.IsSuccessStatusCode)
+				{
+					Console.WriteLine($"🔎 Falha ao buscar página existente: {response.StatusCode}\n{content}");
+					return null;
+				}
+
+				dynamic resultado = JsonConvert.DeserializeObject(content);
+				if (resultado.results.Count > 0)
+				{
+					return resultado.results[0].id;
+				}
+
+				return null;
+			}
+		}
+
 
 		public async Task UpdateStatus()
 		{
