@@ -124,12 +124,9 @@ namespace Gerador_ecxel
 						},
 						["Mês"] = new
 						{
-							rich_text = new[]
+							multi_select = new[]
 							{
-								new
-								{
-									text = new { content = mes }
-								}
+								new { name = mes }
 							}
 						}
 					};
@@ -141,6 +138,7 @@ namespace Gerador_ecxel
 						properties["Obj.Dia"] = new { number = faturado.objAoDia };
 						properties["Obj.Mes"] = new { number = faturado.objMes };
 						properties["TX REP %"] = new { number = faturado.taxRep };
+						properties["Qtd Reparações"] = new { number = faturado.qntRep };
 					}
 					if (complementar != null)
 					{
@@ -194,16 +192,16 @@ namespace Gerador_ecxel
 					{
 						and = new object[]
 						{
-					new
-					{
-						property = "Loja",
-						relation = new { contains = lojaId }
-					},
-					new
-					{
-						property = "Mês",
-						rich_text = new { equals = mes }
-					}
+							new
+							{
+								property = "Loja",
+								relation = new { contains = lojaId }
+							},
+							new
+							{
+								property = "Mês",
+								multi_select  = new { contains  = mes }
+							}
 						}
 					}
 				};

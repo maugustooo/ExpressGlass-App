@@ -42,12 +42,14 @@
 			label1 = new Label();
 			pictureBox1 = new PictureBox();
 			tabPage2 = new TabPage();
-			listBoxStores = new CheckedListBox();
-			dataGridView1 = new DataGridView();
-			buttonFilter = new Button();
+			statusLabel2 = new Label();
+			progressBar3 = new ProgressBar();
 			panel3 = new Panel();
-			button1 = new Button();
-			button2 = new Button();
+			deleteButton = new Button();
+			progressBar2 = new ProgressBar();
+			eleminarLabel = new Label();
+			label3 = new Label();
+			comboBox1 = new ComboBox();
 			panel4 = new Panel();
 			label2 = new Label();
 			pictureBox2 = new PictureBox();
@@ -59,7 +61,6 @@
 			panel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
 			tabPage2.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
 			panel3.SuspendLayout();
 			panel4.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
@@ -209,9 +210,8 @@
 			// 
 			tabPage2.BackColor = Color.Gainsboro;
 			tabPage2.BackgroundImageLayout = ImageLayout.None;
-			tabPage2.Controls.Add(listBoxStores);
-			tabPage2.Controls.Add(dataGridView1);
-			tabPage2.Controls.Add(buttonFilter);
+			tabPage2.Controls.Add(statusLabel2);
+			tabPage2.Controls.Add(progressBar3);
 			tabPage2.Controls.Add(panel3);
 			tabPage2.Controls.Add(panel4);
 			tabPage2.Controls.Add(button3);
@@ -223,72 +223,88 @@
 			tabPage2.TabIndex = 1;
 			tabPage2.Text = "Ler Ecxel";
 			// 
-			// listBoxStores
+			// statusLabel2
 			// 
-			listBoxStores.CheckOnClick = true;
-			listBoxStores.FormattingEnabled = true;
-			listBoxStores.Location = new Point(224, 134);
-			listBoxStores.Name = "listBoxStores";
-			listBoxStores.Size = new Size(351, 98);
-			listBoxStores.TabIndex = 11;
+			statusLabel2.AutoSize = true;
+			statusLabel2.Font = new Font("Segoe UI", 23F);
+			statusLabel2.Location = new Point(577, 330);
+			statusLabel2.Name = "statusLabel2";
+			statusLabel2.Size = new Size(0, 42);
+			statusLabel2.TabIndex = 8;
+			statusLabel2.TextAlign = ContentAlignment.MiddleCenter;
+			statusLabel2.Visible = false;
 			// 
-			// dataGridView1
+			// progressBar3
 			// 
-			dataGridView1.AllowUserToAddRows = false;
-			dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-			dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			dataGridView1.Location = new Point(224, 237);
-			dataGridView1.Name = "dataGridView1";
-			dataGridView1.Size = new Size(1014, 259);
-			dataGridView1.TabIndex = 10;
-			// 
-			// buttonFilter
-			// 
-			buttonFilter.Location = new Point(581, 134);
-			buttonFilter.Name = "buttonFilter";
-			buttonFilter.Size = new Size(140, 51);
-			buttonFilter.TabIndex = 9;
-			buttonFilter.Text = "Filtrar";
-			buttonFilter.UseVisualStyleBackColor = true;
-			buttonFilter.Click += buttonFilter_Click;
+			progressBar3.Location = new Point(557, 434);
+			progressBar3.Name = "progressBar3";
+			progressBar3.Size = new Size(328, 59);
+			progressBar3.TabIndex = 9;
+			progressBar3.Visible = false;
 			// 
 			// panel3
 			// 
 			panel3.BorderStyle = BorderStyle.FixedSingle;
-			panel3.Controls.Add(button1);
-			panel3.Controls.Add(button2);
+			panel3.Controls.Add(deleteButton);
+			panel3.Controls.Add(progressBar2);
+			panel3.Controls.Add(eleminarLabel);
+			panel3.Controls.Add(label3);
+			panel3.Controls.Add(comboBox1);
 			panel3.Location = new Point(6, 89);
 			panel3.Name = "panel3";
-			panel3.Size = new Size(201, 425);
+			panel3.Size = new Size(289, 425);
 			panel3.TabIndex = 7;
 			// 
-			// button1
+			// deleteButton
 			// 
-			button1.BackColor = Color.LightGray;
-			button1.FlatAppearance.BorderSize = 0;
-			button1.FlatAppearance.MouseOverBackColor = Color.Black;
-			button1.FlatStyle = FlatStyle.Flat;
-			button1.Font = new Font("Segoe UI", 13F);
-			button1.Location = new Point(24, 18);
-			button1.Name = "button1";
-			button1.Size = new Size(150, 150);
-			button1.TabIndex = 6;
-			button1.Text = "Atualizar Dados da API";
-			button1.UseVisualStyleBackColor = false;
+			deleteButton.BackColor = Color.LightGray;
+			deleteButton.FlatAppearance.BorderSize = 0;
+			deleteButton.FlatAppearance.MouseOverBackColor = Color.Black;
+			deleteButton.FlatStyle = FlatStyle.Flat;
+			deleteButton.Font = new Font("Segoe UI", 17F);
+			deleteButton.Location = new Point(12, 316);
+			deleteButton.Name = "deleteButton";
+			deleteButton.Size = new Size(255, 57);
+			deleteButton.TabIndex = 13;
+			deleteButton.Text = "Eleminar Mês";
+			deleteButton.UseVisualStyleBackColor = false;
+			deleteButton.Click += button4_Click;
 			// 
-			// button2
+			// progressBar2
 			// 
-			button2.BackColor = Color.LightGray;
-			button2.FlatAppearance.BorderSize = 0;
-			button2.FlatAppearance.MouseOverBackColor = Color.Black;
-			button2.FlatStyle = FlatStyle.Flat;
-			button2.Font = new Font("Segoe UI", 13F);
-			button2.Location = new Point(24, 245);
-			button2.Name = "button2";
-			button2.Size = new Size(150, 150);
-			button2.TabIndex = 5;
-			button2.Text = "Abrir Pasta Dos PDF´S";
-			button2.UseVisualStyleBackColor = false;
+			progressBar2.Location = new Point(46, 204);
+			progressBar2.Name = "progressBar2";
+			progressBar2.Size = new Size(174, 46);
+			progressBar2.TabIndex = 12;
+			progressBar2.Visible = false;
+			// 
+			// eleminarLabel
+			// 
+			eleminarLabel.AutoSize = true;
+			eleminarLabel.Location = new Point(-4, 129);
+			eleminarLabel.Name = "eleminarLabel";
+			eleminarLabel.Size = new Size(308, 46);
+			eleminarLabel.TabIndex = 11;
+			eleminarLabel.Text = "Work on progress...";
+			// 
+			// label3
+			// 
+			label3.AutoSize = true;
+			label3.Font = new Font("Segoe UI", 17F);
+			label3.Location = new Point(12, 16);
+			label3.Name = "label3";
+			label3.Size = new Size(255, 31);
+			label3.TabIndex = 10;
+			label3.Text = "Eleminar Mês da Tabela";
+			// 
+			// comboBox1
+			// 
+			comboBox1.FormattingEnabled = true;
+			comboBox1.Items.AddRange(new object[] { "Janeiro", "Fevereiro", "Março", "Abril", "Junho", "Julho", "Agosto", "Setembro", "Novembro", "Dezembro" });
+			comboBox1.Location = new Point(3, 63);
+			comboBox1.Name = "comboBox1";
+			comboBox1.Size = new Size(281, 53);
+			comboBox1.TabIndex = 8;
 			// 
 			// panel4
 			// 
@@ -328,7 +344,7 @@
 			// 
 			button3.BackColor = Color.Transparent;
 			button3.Font = new Font("Segoe UI", 15F);
-			button3.Location = new Point(866, 108);
+			button3.Location = new Point(557, 153);
 			button3.Name = "button3";
 			button3.Size = new Size(328, 66);
 			button3.TabIndex = 0;
@@ -353,8 +369,9 @@
 			panel1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
 			tabPage2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+			tabPage2.PerformLayout();
 			panel3.ResumeLayout(false);
+			panel3.PerformLayout();
 			panel4.ResumeLayout(false);
 			panel4.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
@@ -387,5 +404,12 @@
 		private Button buttonFilter;
 		private CheckedListBox listBoxStores;
 		private DataGridView dataGridView1;
+		private Label label3;
+		private ComboBox comboBox1;
+		private ProgressBar progressBar2;
+		private Label eleminarLabel;
+		private Button deleteButton;
+		private Label statusLabel2;
+		private ProgressBar progressBar3;
 	}
 }

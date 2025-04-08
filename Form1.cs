@@ -19,6 +19,8 @@ namespace Gerador_ecxel
 			public double objAoDia { get; set; }
 			public double objMes { get; set; }
 			public double taxRep { get; set; }
+
+			public double qntRep { get; set; }
 		}
 
 		public class ComplementarData
@@ -467,13 +469,16 @@ namespace Gerador_ecxel
 					var faturados = (List<FaturadoData>)dados["faturados"];
 					var complementares = (List<ComplementarData>)dados["complementares"];
 					string mes = (string)dados["mes"];
-					listBoxStores.Items.Clear();
-					foreach (var loja in faturados)
-					{
-						listBoxStores.Items.Add(loja.loja);
-					}
+					statusLabel2.Text = "A gerar Dados no Notion...";
+					statusLabel2.Visible = true;
+					statusLabel2.ForeColor = Color.Blue;
+					progressBar3.Style = ProgressBarStyle.Marquee;
+					progressBar3.Visible = true;
+
 					await notionService.UpdateNotionDatabase(faturados, complementares, mes);
 
+					statusLabel2.Visible = false;
+					progressBar3.Visible = false;
 					MessageBox.Show("Dados atualizados no Notion!");
 				}
 				catch (Exception ex)
@@ -495,7 +500,7 @@ namespace Gerador_ecxel
 
 			double value;
 
-			if (columnIndex == 8 || columnIndex == 7)
+			if (columnIndex == 9|| columnIndex == 7)
 			{
 				if (double.TryParse(rawValue, NumberStyles.Any, new CultureInfo("pt-PT"), out value))
 				{
@@ -535,7 +540,7 @@ namespace Gerador_ecxel
 						ConfigureDataTable = _ => new ExcelDataTableConfiguration { UseHeaderRow = true }
 					});
 
-					var faturadosTable = result.Tables["faturados"];
+					var faturadosTable = result.Tables["Faturados"];
 					if (faturadosTable != null)
 					{
 						for (int linha = 6; linha <= 7; linha++)
@@ -553,15 +558,16 @@ namespace Gerador_ecxel
 								break;
 						}
 						faturadosList = faturadosTable.AsEnumerable()
-						.Skip(10)
+						.Skip(9)
 						.Select(static row => new FaturadoData
 						{
 							loja = row.IsNull(1) ? string.Empty : row[1]?.ToString() ?? string.Empty,
 							faturados = TryRound(row, 2, 1),
 							fte = TryRound(row, 3, 1),
-							objAoDia = TryRound(row, 4,0),
+							objAoDia = TryRound(row, 4, 0),
 							objMes = TryRound(row, 5, 0),
-							taxRep = TryRound(row, 8, 2)
+							taxRep = TryRound(row, 9, 2),
+							qntRep = TryRound(row, 10, 0)
 
 						})
 						.Where(data => !string.IsNullOrEmpty(data.loja))
@@ -569,7 +575,7 @@ namespace Gerador_ecxel
 						.ToList();
 
 					}
-					var complementaresTable = result.Tables["complementares"];
+					var complementaresTable = result.Tables["Complementares"];
 					if (complementaresTable != null)
 					{
 						complementaresList = complementaresTable.AsEnumerable()
@@ -585,6 +591,7 @@ namespace Gerador_ecxel
 					}
 				}
 			}
+			Console.WriteLine($"mes: {mes}");
 			return new Dictionary<string, object>
 			{
 				{"mes", mes },
@@ -593,42 +600,9 @@ namespace Gerador_ecxel
 			};
 		}
 
-		private void buttonFilter_Click(object sender, EventArgs e)
+		private void button4_Click(object sender, EventArgs e)
 		{
-			var lojasSelecionadas = listBoxStores.CheckedItems.Cast<string>().ToList();
-			if (lojasSelecionadas.Count == 0)
-			{
-				MessageBox.Show("Selecione pelo menos uma loja.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-				return;
-			}
 
-			var dadosFiltrados = _dataTable.AsEnumerable()
-				.Skip(10)
-				.Where(row => lojasSelecionadas.Contains(row.Field<string>(1)?.Trim() ?? ""))
-				.Select(row => new
-				{
-					  B = row.IsNull(1) ? "" : row[1].ToString(),
-					  C = row.IsNull(2) ? "" : row[2].ToString(),
-					  D = row.IsNull(3) ? "" : row[3].ToString(),
-					  E = row.IsNull(4) ? "" : row[4].ToString(),
-					  F = row.IsNull(5) ? "" : row[5].ToString(),
-					  I = row.IsNull(8) ? "" : row[8].ToString()
-				})
-				.ToList();
-			if (dadosFiltrados.Count == 0)
-			{
-				MessageBox.Show("Nenhum dado encontrado para os filtros selecionados.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
-				return;
-			}
-			dataGridView1.DataSource = dadosFiltrados;
-			foreach (DataGridViewColumn col in dataGridView1.Columns)
-			{
-				col.Visible = col.Index >= 0 && col.Index <= 5;
-				col.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-				col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-			}
-			dataGridView1.RowTemplate.Height = 30;
-			dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
 		}
 	}
 }
