@@ -1,6 +1,7 @@
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExcelDataReader;
 using iTextSharp.text;
@@ -42,7 +43,7 @@ namespace Gerador_ecxel
 		public Form1(Config config)
 		{
 			InitializeComponent();
-			notionService = new NotionService(config.NotionApiKey, config.NotionDatabaseId);
+			notionService = new NotionService(config.NotionApiKey, config.NotionDatabaseId, config.NotionDatabaseIdKPIs, config.NotionDatabaseIdLojas);
 		}
 		private async void GerarPdf_Click(object sender, EventArgs e)
 		{
@@ -56,6 +57,8 @@ namespace Gerador_ecxel
 				var config = NotionConfigHelper.GetConfig();
 				var notionKey = config.NotionApiKey;
 				var databaseId = config.NotionDatabaseId;
+				var notionKeyKPIs = config.NotionDatabaseIdKPIs;
+				var notionKeyLojas = config.NotionDatabaseIdLojas;
 				if (notionKey == null || databaseId == null)
 				{
 					progressBar1.Visible = false;
@@ -63,7 +66,7 @@ namespace Gerador_ecxel
 					MessageBox.Show("Erro: Chaves de API não foram definidas.");
 					return;
 				}
-				NotionService notionService = new NotionService(notionKey, databaseId);
+				NotionService notionService = new NotionService(notionKey, databaseId, notionKeyKPIs, notionKeyLojas);
 				List<string[]> entries = await notionService.GetDatabase();
 				string previousName = "";
 				int pdfCount = 0;
@@ -600,9 +603,18 @@ namespace Gerador_ecxel
 			};
 		}
 
-		private void button4_Click(object sender, EventArgs e)
+		private async void button4_Click(object sender, EventArgs e)
 		{
-
+			string mes = comboBox1.SelectedItem?.ToString();
+			if (!string.IsNullOrEmpty(mes))
+			{
+				await notionService.DeleteMonth(mes + " 2025");
+				MessageBox.Show($"Registros do mês '{mes}' foram eliminados.");
+			}
+			else
+			{
+				MessageBox.Show("Selecione um mês para eliminar.");
+			}
 		}
 	}
 }
