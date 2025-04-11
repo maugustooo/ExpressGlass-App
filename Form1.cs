@@ -31,6 +31,12 @@ namespace Gerador_ecxel
 			public double escovas { get; set; }
 			public double escovasPercent { get; set; }
 		}
+
+		public class monthStoreData
+		{
+			public string loja { get; set; }
+			public double NPS { get; set; }
+		}
 		private readonly NotionService notionService;
 		private string _colaborador = string.Empty;
 		private string _data = string.Empty;
@@ -471,6 +477,7 @@ namespace Gerador_ecxel
 
 					var faturados = (List<FaturadoData>)dados["faturados"];
 					var complementares = (List<ComplementarData>)dados["complementares"];
+					var monthStores = (List<monthStoreData>)dados["monthStores"];
 					string mes = (string)dados["mes"];
 					statusLabel2.Text = "A gerar Dados no Notion...";
 					statusLabel2.Visible = true;
@@ -478,7 +485,7 @@ namespace Gerador_ecxel
 					progressBar3.Style = ProgressBarStyle.Marquee;
 					progressBar3.Visible = true;
 
-					await notionService.UpdateNotionDatabase(faturados, complementares, mes);
+					await notionService.UpdateNotionDatabase(faturados, complementares, monthStores, mes);
 
 					statusLabel2.Visible = false;
 					progressBar3.Visible = false;
@@ -503,7 +510,7 @@ namespace Gerador_ecxel
 
 			double value;
 
-			if (columnIndex == 9|| columnIndex == 7)
+			if (columnIndex == 9 || columnIndex == 7 || columnIndex == 27)
 			{
 				if (double.TryParse(rawValue, NumberStyles.Any, new CultureInfo("pt-PT"), out value))
 				{
@@ -527,11 +534,30 @@ namespace Gerador_ecxel
 			}
 			return 0;
 		}
+		private string GetRigthMonth(string mes)
+		{
+			try
+			{
+				DateTime data = DateTime.Parse(mes);
+				string monthName = data.ToString("MMMM", new System.Globalization.CultureInfo("pt-PT"));
+				monthName = char.ToUpper(monthName[0]) + monthName.Substring(1);
+
+				return $"{monthName} {data.Year}";
+			}
+			catch (FormatException)
+			{
+				throw new ArgumentException("Data inválida");
+			}
+		}
+
 
 		private Dictionary<string, object> loadData(string filePath)
 		{
+			string[] lojas = { "Lojas Jan25", "Lojas Fev25", "Lojas Mar25", "Lojas Abr25", "Lojas Mai25", "Lojas Jun25", "Lojas Jul25", "Lojas Ago25", "Lojas Set25", "Lojas Out25", "Lojas Nov25", "Lojas Dez25" };
+			DataTable monthStores = null;
 			var faturadosList = new List<FaturadoData>();
 			var complementaresList = new List<ComplementarData>();
+			var monthStoreList = new List<monthStoreData>();
 			string mes = "";
 
 			using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
@@ -543,6 +569,47 @@ namespace Gerador_ecxel
 						ConfigureDataTable = _ => new ExcelDataTableConfiguration { UseHeaderRow = true }
 					});
 
+					foreach (var loja in lojas)
+					{
+						if (result.Tables.Contains(loja))
+						{
+							monthStores = result.Tables[loja];
+							break;
+						}
+					}
+					if (monthStores != null)
+					{
+						for (int linha = 2; linha <= 3; linha++)
+						{
+							if (!monthStores.Rows[linha].IsNull(1))
+							{
+								mes = monthStores.Rows[linha][1]?.ToString()?.Trim() ?? "";
+								if (!string.IsNullOrWhiteSpace(mes))
+								{
+									mes = GetRigthMonth(mes);
+									break;
+								}
+							}
+						}
+						monthStoreList = monthStores.AsEnumerable()
+						.Skip(5)
+						.Select(static row => new monthStoreData
+						{
+							loja = row.IsNull(1) ? string.Empty : row[1]?.ToString() ?? string.Empty,
+							NPS = TryRound(row, 27, 1),
+
+						})
+						.Where(data => !string.IsNullOrEmpty(data.loja))
+						.Distinct()
+						.ToList();
+						return new Dictionary<string, object>
+						{
+							{"mes", mes },
+							{"faturados", faturadosList},
+							{"complementares", complementaresList},
+							{"monthStores", monthStoreList}
+						};
+					}
 					var faturadosTable = result.Tables["Faturados"];
 					if (faturadosTable != null)
 					{
@@ -599,7 +666,8 @@ namespace Gerador_ecxel
 			{
 				{"mes", mes },
 				{"faturados", faturadosList},
-				{"complementares", complementaresList}
+				{"complementares", complementaresList},
+				{"monthStores", monthStoreList}
 			};
 		}
 

@@ -47,7 +47,6 @@
 			panel3 = new Panel();
 			deleteButton = new Button();
 			progressBar2 = new ProgressBar();
-			eleminarLabel = new Label();
 			label3 = new Label();
 			comboBox1 = new ComboBox();
 			panel4 = new Panel();
@@ -247,7 +246,6 @@
 			panel3.BorderStyle = BorderStyle.FixedSingle;
 			panel3.Controls.Add(deleteButton);
 			panel3.Controls.Add(progressBar2);
-			panel3.Controls.Add(eleminarLabel);
 			panel3.Controls.Add(label3);
 			panel3.Controls.Add(comboBox1);
 			panel3.Location = new Point(6, 89);
@@ -269,6 +267,10 @@
 			deleteButton.Text = "Eleminar Mês";
 			deleteButton.UseVisualStyleBackColor = false;
 			deleteButton.Click += button4_Click;
+			deleteButton.Enter += GerarPdf_MouseEnter;
+			deleteButton.Leave += GerarPdf_MouseLeave;
+			deleteButton.MouseEnter += GerarPdf_MouseEnter;
+			deleteButton.MouseLeave += GerarPdf_MouseLeave;
 			// 
 			// progressBar2
 			// 
@@ -277,15 +279,6 @@
 			progressBar2.Size = new Size(174, 46);
 			progressBar2.TabIndex = 12;
 			progressBar2.Visible = false;
-			// 
-			// eleminarLabel
-			// 
-			eleminarLabel.AutoSize = true;
-			eleminarLabel.Location = new Point(-4, 129);
-			eleminarLabel.Name = "eleminarLabel";
-			eleminarLabel.Size = new Size(308, 46);
-			eleminarLabel.TabIndex = 11;
-			eleminarLabel.Text = "Work on progress...";
 			// 
 			// label3
 			// 
@@ -407,7 +400,6 @@
 		private Label label3;
 		private ComboBox comboBox1;
 		private ProgressBar progressBar2;
-		private Label eleminarLabel;
 		private Button deleteButton;
 		private Label statusLabel2;
 		private ProgressBar progressBar3;

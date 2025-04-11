@@ -125,16 +125,74 @@ namespace Gerador_ecxel
 			return results?.FirstOrDefault()?["id"]?.ToString();
 		}
 
-		public async Task UpdateNotionDatabase(List<FaturadoData> faturados, List<ComplementarData> complementares, string mes)
+		public async Task updateNPs(List<monthStoreData> monthStores, string mes)
+		{
+			var databaseId = "1d2a53a057818007aa83c2a9c8042a84";
+			var url = "https://api.notion.com/v1/pages";
+
+			var todasLojas = monthStores.Select(f => f.loja)
+				.Distinct()
+				.ToList();
+
+			Console.WriteLine($"🔍 Lojas encontradas: {string.Join(", ", todasLojas)}");
+
+			var lojaUUIDMap = new Dictionary<string, string>();
+			foreach (var loja in todasLojas)
+			{
+				var uuid = await GetLojaUUID(loja);
+				if (!string.IsNullOrEmpty(uuid))
+					lojaUUIDMap[loja] = uuid;
+
+			}
+
+			var monthStoresMap = monthStores
+				.GroupBy(f => f.loja)
+				.ToDictionary(g => g.Key, g => g.First());
+
+			foreach (var loja in todasLojas)
+			{
+				if (!lojaUUIDMap.TryGetValue(loja, out var lojaUUID))
+				{
+					continue;
+				}
+
+				monthStoresMap.TryGetValue(loja, out var monthStore);
+
+				string existingPageId = await BuscarPaginaExistente(databaseId, lojaUUID, mes);
+				if (existingPageId != null)
+				{
+					var properties = new Dictionary<string, object>
+					{
+						["NPS"] = new { number = monthStore.NPS }
+					};
+
+					string patchUrl = $"https://api.notion.com/v1/pages/{existingPageId}";
+					var updateRequest = new HttpRequestMessage(HttpMethod.Patch, patchUrl)
+					{
+						Content = new StringContent(JsonConvert.SerializeObject(new { properties }), Encoding.UTF8, "application/json")
+					};
+
+					var updateResponse = await _client.SendAsync(updateRequest);
+					var updateContent = await updateResponse.Content.ReadAsStringAsync();
+
+				}
+			}
+		}
+
+		public async Task UpdateNotionDatabase(List<FaturadoData> faturados, List<ComplementarData> complementares, List<monthStoreData> monthStores, string mes)
 		{
 			var databaseId = _dataBaseIdKPI;
 			var url = "https://api.notion.com/v1/pages";
 
+			if (monthStores.Count > 0)
+			{
+				await updateNPs(monthStores, mes);
+				return;
+			}
 			var todasLojas = faturados.Select(f => f.loja)
 				.Union(complementares.Select(c => c.lojas))
 				.Distinct()
 				.ToList();
-
 			var lojaUUIDMap = new Dictionary<string, string>();
 			foreach (var loja in todasLojas)
 			{
