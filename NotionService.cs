@@ -127,7 +127,7 @@ namespace Gerador_ecxel
 
 		public async Task updateNPs(List<monthStoreData> monthStores, string mes)
 		{
-			var databaseId = "1d2a53a057818007aa83c2a9c8042a84";
+			var databaseId = _dataBaseIdKPI;
 			var url = "https://api.notion.com/v1/pages";
 
 			var todasLojas = monthStores.Select(f => f.loja)
@@ -240,7 +240,9 @@ namespace Gerador_ecxel
 				if (complementar != null)
 				{
 					properties["VAPS"] = new { number = complementar.vaps };
+					properties["QTD Escovas"] = new { number = complementar.escovas };
 					properties["Escovas %"] = new { number = complementar.escovasPercent };
+					properties["Polimentos"] = new { number = complementar.polimento };
 				}
 
 				string existingPageId = await BuscarPaginaExistente(databaseId, lojaUUID, mes);
@@ -258,7 +260,7 @@ namespace Gerador_ecxel
 
 					if (!updateResponse.IsSuccessStatusCode)
 					{
-						//Console.WriteLine($"⚠️ Erro ao atualizar página: {updateContent}");
+						Console.WriteLine($"⚠️ Erro ao atualizar página: {updateContent}");
 					}
 				}
 				else
@@ -279,7 +281,7 @@ namespace Gerador_ecxel
 
 					if (!response.IsSuccessStatusCode)
 					{
-						//Console.WriteLine($"⚠️ Erro ao criar página: {responseContent}");
+						Console.WriteLine($"⚠️ Erro ao criar página: {responseContent}");
 					}
 				}
 			}

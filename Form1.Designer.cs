@@ -54,6 +54,7 @@
 			pictureBox2 = new PictureBox();
 			button3 = new Button();
 			bindingSource1 = new BindingSource(components);
+			label4 = new Label();
 			tabControl1.SuspendLayout();
 			tabPage1.SuspendLayout();
 			panel2.SuspendLayout();
@@ -209,9 +210,11 @@
 			// 
 			tabPage2.BackColor = Color.Gainsboro;
 			tabPage2.BackgroundImageLayout = ImageLayout.None;
+			tabPage2.Controls.Add(label4);
 			tabPage2.Controls.Add(statusLabel2);
 			tabPage2.Controls.Add(progressBar3);
 			tabPage2.Controls.Add(panel3);
+			tabPage2.Controls.Add(comboBox1);
 			tabPage2.Controls.Add(panel4);
 			tabPage2.Controls.Add(button3);
 			tabPage2.Font = new Font("Segoe UI", 25F);
@@ -247,7 +250,6 @@
 			panel3.Controls.Add(deleteButton);
 			panel3.Controls.Add(progressBar2);
 			panel3.Controls.Add(label3);
-			panel3.Controls.Add(comboBox1);
 			panel3.Location = new Point(6, 89);
 			panel3.Name = "panel3";
 			panel3.Size = new Size(289, 425);
@@ -294,7 +296,7 @@
 			// 
 			comboBox1.FormattingEnabled = true;
 			comboBox1.Items.AddRange(new object[] { "Janeiro", "Fevereiro", "Março", "Abril", "Junho", "Julho", "Agosto", "Setembro", "Novembro", "Dezembro" });
-			comboBox1.Location = new Point(3, 63);
+			comboBox1.Location = new Point(358, 166);
 			comboBox1.Name = "comboBox1";
 			comboBox1.Size = new Size(281, 53);
 			comboBox1.TabIndex = 8;
@@ -337,13 +339,23 @@
 			// 
 			button3.BackColor = Color.Transparent;
 			button3.Font = new Font("Segoe UI", 15F);
-			button3.Location = new Point(557, 153);
+			button3.Location = new Point(810, 153);
 			button3.Name = "button3";
 			button3.Size = new Size(328, 66);
 			button3.TabIndex = 0;
 			button3.Text = "Importar Excel";
 			button3.UseVisualStyleBackColor = false;
 			button3.Click += button3_Click;
+			// 
+			// label4
+			// 
+			label4.AutoSize = true;
+			label4.Font = new Font("Segoe UI", 17F);
+			label4.Location = new Point(409, 123);
+			label4.Name = "label4";
+			label4.Size = new Size(168, 31);
+			label4.TabIndex = 14;
+			label4.Text = "Selecionar Mês";
 			// 
 			// Form1
 			// 
@@ -403,5 +415,6 @@
 		private Button deleteButton;
 		private Label statusLabel2;
 		private ProgressBar progressBar3;
+		private Label label4;
 	}
 }

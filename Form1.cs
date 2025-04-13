@@ -30,6 +30,7 @@ namespace Gerador_ecxel
 			public double vaps { get; set; }
 			public double escovas { get; set; }
 			public double escovasPercent { get; set; }
+			public double polimento { get; set; }
 		}
 
 		public class monthStoreData
@@ -461,6 +462,7 @@ namespace Gerador_ecxel
 			else
 				MessageBox.Show("Atualização feita com sucesso", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
+
 		private async void button3_Click(object sender, EventArgs e)
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog
@@ -473,7 +475,8 @@ namespace Gerador_ecxel
 				string excelPath = openFileDialog.FileName;
 				try
 				{
-					var dados = loadData(excelPath);
+					var selectedItem = comboBox1.SelectedItem != null ? comboBox1.SelectedItem.ToString() : "";
+					var dados = loadData(excelPath, selectedItem);
 
 					var faturados = (List<FaturadoData>)dados["faturados"];
 					var complementares = (List<ComplementarData>)dados["complementares"];
@@ -501,6 +504,7 @@ namespace Gerador_ecxel
 				MessageBox.Show("Nenhum ficheiro selecionado", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
+
 		private static double TryRound(DataRow row, int columnIndex, int decimalPlaces)
 		{
 			if (row.IsNull(columnIndex)) return 0;
@@ -549,10 +553,37 @@ namespace Gerador_ecxel
 				throw new ArgumentException("Data inválida");
 			}
 		}
-
-
-		private Dictionary<string, object> loadData(string filePath)
+		private string GetSheetName(string mesComboBox, int ano)
 		{
+			var abrevs = new Dictionary<string, string>
+			{
+				{"Janeiro", "Jan"},
+				{"Fevereiro", "Fev"},
+				{"Março", "Mar"},
+				{"Abril", "Abr"},
+				{"Maio", "Mai"},
+				{"Junho", "Jun"},
+				{"Julho", "Jul"},
+				{"Agosto", "Ago"},
+				{"Setembro", "Set"},
+				{"Outubro", "Out"},
+				{"Novembro", "Nov"},
+				{"Dezembro", "Dez"}
+			};
+
+			if (!abrevs.ContainsKey(mesComboBox))
+				throw new ArgumentException("Mês inválido na combo box");
+
+			string abrev = abrevs[mesComboBox];
+			string anoDoisDigitos = (ano % 100).ToString("D2");
+			return $"Lojas {abrev}{anoDoisDigitos}";
+		}
+
+		private Dictionary<string, object> loadData(string filePath, string monthSelected)
+		{
+			string nomeSheet = null; 
+			if (!string.IsNullOrEmpty(monthSelected))
+				nomeSheet = GetSheetName(monthSelected, 2025); ;
 			string[] lojas = { "Lojas Jan25", "Lojas Fev25", "Lojas Mar25", "Lojas Abr25", "Lojas Mai25", "Lojas Jun25", "Lojas Jul25", "Lojas Ago25", "Lojas Set25", "Lojas Out25", "Lojas Nov25", "Lojas Dez25" };
 			DataTable monthStores = null;
 			var faturadosList = new List<FaturadoData>();
@@ -569,16 +600,10 @@ namespace Gerador_ecxel
 						ConfigureDataTable = _ => new ExcelDataTableConfiguration { UseHeaderRow = true }
 					});
 
-					foreach (var loja in lojas)
+					if (result.Tables.Contains(nomeSheet))
 					{
-						if (result.Tables.Contains(loja))
-						{
-							monthStores = result.Tables[loja];
-							break;
-						}
-					}
-					if (monthStores != null)
-					{
+						monthStores = result.Tables[nomeSheet];
+
 						for (int linha = 2; linha <= 3; linha++)
 						{
 							if (!monthStores.Rows[linha].IsNull(1))
@@ -591,17 +616,18 @@ namespace Gerador_ecxel
 								}
 							}
 						}
-						monthStoreList = monthStores.AsEnumerable()
-						.Skip(5)
-						.Select(static row => new monthStoreData
-						{
-							loja = row.IsNull(1) ? string.Empty : row[1]?.ToString() ?? string.Empty,
-							NPS = TryRound(row, 27, 1),
 
-						})
-						.Where(data => !string.IsNullOrEmpty(data.loja))
-						.Distinct()
-						.ToList();
+						monthStoreList = monthStores.AsEnumerable()
+							.Skip(5)
+							.Select(static row => new monthStoreData
+							{
+								loja = row.IsNull(1) ? string.Empty : row[1]?.ToString() ?? string.Empty,
+								NPS = TryRound(row, 27, 1),
+							})
+							.Where(data => !string.IsNullOrEmpty(data.loja))
+							.Distinct()
+							.ToList();
+
 						return new Dictionary<string, object>
 						{
 							{"mes", mes },
@@ -655,7 +681,8 @@ namespace Gerador_ecxel
 							lojas = row.IsNull(2) ? string.Empty : row[2]?.ToString() ?? string.Empty,
 							vaps = TryRound(row, 3, 1),
 							escovas = TryRound(row, 6, 1),
-							escovasPercent = TryRound(row, 7, 2)
+							escovasPercent = TryRound(row, 7, 2),
+							polimento = TryRound(row, 8, 0)
 						})
 						.ToList();
 					}

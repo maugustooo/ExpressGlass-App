@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json;
@@ -16,24 +17,42 @@ namespace Gerador_ecxel
 		//static extern bool AllocConsole();
 		static void Main()
 		{
-			FileStream fs = new FileStream("log.txt", FileMode.Append, FileAccess.Write);
+			string logPath = "log.txt";
+			FileStream fs = new FileStream(logPath, FileMode.Append, FileAccess.Write);
 			StreamWriter sw = new StreamWriter(fs);
 			sw.AutoFlush = true;
 			Console.SetOut(sw);
 			Console.SetError(sw);
-			//AllocConsole();
-			// To customize application configuration such as set high DPI settings or default font,
-			// see https://aka.ms/applicationconfiguration.
-			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-			ApplicationConfiguration.Initialize();
-			var config = NotionConfigHelper.GetConfig();
 
-			if (config == null)
+			try
 			{
-				MessageBox.Show("Erro: As API Keys não foram definidas.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return;
+				Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+				ApplicationConfiguration.Initialize();
+				var config = NotionConfigHelper.GetConfig();
+
+				if (config == null)
+				{
+					MessageBox.Show("Erro: As API Keys não foram definidas.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
+
+				Application.Run(new Form1(config));
 			}
-			Application.Run(new Form1(config));
+			finally
+			{
+				sw.Close();
+				fs.Close();
+
+				try
+				{
+					if (File.Exists(logPath))
+						File.Delete(logPath);
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine("Erro ao deletar o log: " + ex.Message);
+				}
+			}
 		}
 	}
 }
