@@ -42,19 +42,19 @@
 			label1 = new Label();
 			pictureBox1 = new PictureBox();
 			tabPage2 = new TabPage();
+			label4 = new Label();
 			statusLabel2 = new Label();
 			progressBar3 = new ProgressBar();
 			panel3 = new Panel();
+			button4 = new Button();
 			deleteButton = new Button();
 			progressBar2 = new ProgressBar();
-			label3 = new Label();
 			comboBox1 = new ComboBox();
 			panel4 = new Panel();
 			label2 = new Label();
 			pictureBox2 = new PictureBox();
 			button3 = new Button();
 			bindingSource1 = new BindingSource(components);
-			label4 = new Label();
 			tabControl1.SuspendLayout();
 			tabPage1.SuspendLayout();
 			panel2.SuspendLayout();
@@ -225,6 +225,16 @@
 			tabPage2.TabIndex = 1;
 			tabPage2.Text = "Ler Ecxel";
 			// 
+			// label4
+			// 
+			label4.AutoSize = true;
+			label4.Font = new Font("Segoe UI", 17F);
+			label4.Location = new Point(409, 123);
+			label4.Name = "label4";
+			label4.Size = new Size(168, 31);
+			label4.TabIndex = 14;
+			label4.Text = "Selecionar Mês";
+			// 
 			// statusLabel2
 			// 
 			statusLabel2.AutoSize = true;
@@ -247,13 +257,30 @@
 			// panel3
 			// 
 			panel3.BorderStyle = BorderStyle.FixedSingle;
+			panel3.Controls.Add(button4);
 			panel3.Controls.Add(deleteButton);
 			panel3.Controls.Add(progressBar2);
-			panel3.Controls.Add(label3);
 			panel3.Location = new Point(6, 89);
 			panel3.Name = "panel3";
-			panel3.Size = new Size(289, 425);
+			panel3.Size = new Size(230, 425);
 			panel3.TabIndex = 7;
+			// 
+			// button4
+			// 
+			button4.BackColor = Color.LightGray;
+			button4.FlatAppearance.BorderSize = 0;
+			button4.FlatAppearance.MouseOverBackColor = Color.Black;
+			button4.FlatStyle = FlatStyle.Flat;
+			button4.Font = new Font("Segoe UI", 13F);
+			button4.Location = new Point(37, 23);
+			button4.Name = "button4";
+			button4.Size = new Size(160, 150);
+			button4.TabIndex = 14;
+			button4.Text = "Atualizar Dados da API";
+			button4.UseVisualStyleBackColor = false;
+			button4.Click += resetData_Click;
+			button4.MouseEnter += GerarPdf_MouseEnter;
+			button4.MouseLeave += GerarPdf_MouseLeave;
 			// 
 			// deleteButton
 			// 
@@ -262,9 +289,9 @@
 			deleteButton.FlatAppearance.MouseOverBackColor = Color.Black;
 			deleteButton.FlatStyle = FlatStyle.Flat;
 			deleteButton.Font = new Font("Segoe UI", 17F);
-			deleteButton.Location = new Point(12, 316);
+			deleteButton.Location = new Point(37, 204);
 			deleteButton.Name = "deleteButton";
-			deleteButton.Size = new Size(255, 57);
+			deleteButton.Size = new Size(160, 121);
 			deleteButton.TabIndex = 13;
 			deleteButton.Text = "Eleminar Mês";
 			deleteButton.UseVisualStyleBackColor = false;
@@ -276,21 +303,11 @@
 			// 
 			// progressBar2
 			// 
-			progressBar2.Location = new Point(46, 204);
+			progressBar2.Location = new Point(37, 344);
 			progressBar2.Name = "progressBar2";
-			progressBar2.Size = new Size(174, 46);
+			progressBar2.Size = new Size(160, 46);
 			progressBar2.TabIndex = 12;
 			progressBar2.Visible = false;
-			// 
-			// label3
-			// 
-			label3.AutoSize = true;
-			label3.Font = new Font("Segoe UI", 17F);
-			label3.Location = new Point(12, 16);
-			label3.Name = "label3";
-			label3.Size = new Size(255, 31);
-			label3.TabIndex = 10;
-			label3.Text = "Eleminar Mês da Tabela";
 			// 
 			// comboBox1
 			// 
@@ -347,16 +364,6 @@
 			button3.UseVisualStyleBackColor = false;
 			button3.Click += button3_Click;
 			// 
-			// label4
-			// 
-			label4.AutoSize = true;
-			label4.Font = new Font("Segoe UI", 17F);
-			label4.Location = new Point(409, 123);
-			label4.Name = "label4";
-			label4.Size = new Size(168, 31);
-			label4.TabIndex = 14;
-			label4.Text = "Selecionar Mês";
-			// 
 			// Form1
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -376,7 +383,6 @@
 			tabPage2.ResumeLayout(false);
 			tabPage2.PerformLayout();
 			panel3.ResumeLayout(false);
-			panel3.PerformLayout();
 			panel4.ResumeLayout(false);
 			panel4.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
@@ -409,12 +415,12 @@
 		private Button buttonFilter;
 		private CheckedListBox listBoxStores;
 		private DataGridView dataGridView1;
-		private Label label3;
 		private ComboBox comboBox1;
 		private ProgressBar progressBar2;
 		private Button deleteButton;
 		private Label statusLabel2;
 		private ProgressBar progressBar3;
 		private Label label4;
+		private Button button4;
 	}
 }

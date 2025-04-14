@@ -4,9 +4,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 using System.Net;
-using static Gerador_ecxel.Form1;
+using static Gerador_PDF.Services.readExcel;
 
-namespace Gerador_ecxel
+namespace Gerador_PDF.Services
 {
 	public class NotionService
     {
@@ -184,7 +184,7 @@ namespace Gerador_ecxel
 			var databaseId = _dataBaseIdKPI;
 			var url = "https://api.notion.com/v1/pages";
 
-			if (monthStores.Count > 0)
+			if (monthStores != null && monthStores.Count > 0)
 			{
 				await updateNPs(monthStores, mes);
 				return;
@@ -268,7 +268,7 @@ namespace Gerador_ecxel
 					var createBody = new
 					{
 						parent = new { database_id = databaseId },
-						properties = properties
+						properties
 					};
 
 					var request = new HttpRequestMessage(HttpMethod.Post, url)
@@ -351,7 +351,7 @@ namespace Gerador_ecxel
 			}
 			var response = await _client.PostAsync(
 				$"{dataBaseUrl}{_dataBaseId}/query",
-				new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(searchBody), Encoding.UTF8, "application/json")
+				new StringContent(JsonConvert.SerializeObject(searchBody), Encoding.UTF8, "application/json")
 			);
 			if (!response.IsSuccessStatusCode)
 			{
@@ -393,12 +393,12 @@ namespace Gerador_ecxel
 					}
 				};
 
-				string jsonUpdate = Newtonsoft.Json.JsonConvert.SerializeObject(updateBody, Formatting.Indented);
+				string jsonUpdate = JsonConvert.SerializeObject(updateBody, Formatting.Indented);
 				Console.WriteLine($"Atualizando página {pageId} com JSON:\n{jsonUpdate}");
 
 				var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"https://api.notion.com/v1/pages/{pageId}")
 				{
-					Content = new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(updateBody), Encoding.UTF8, "application/json")
+					Content = new StringContent(JsonConvert.SerializeObject(updateBody), Encoding.UTF8, "application/json")
 				};
 
 				var updateResponse = await _client.SendAsync(request);
