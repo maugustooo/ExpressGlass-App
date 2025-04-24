@@ -5,6 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using System.Net;
 using static Gerador_PDF.Services.readExcel;
+using Microsoft.Data.Sqlite;
 
 namespace Gerador_PDF.Services
 {
@@ -15,18 +16,28 @@ namespace Gerador_PDF.Services
         private readonly string _dataBaseId;
 		private readonly string _dataBaseIdKPI;
 		private readonly string _dataBaseIdLoja;
+		private readonly string _dataBaseIdStockParado;
 		private static readonly HttpClient _client = new HttpClient();
 		private readonly Dictionary<string, (string Nome, string Cod, string Loja)> _relatedCache = new();
-		public NotionService(string token, string databaseId, string dataBaseIdKPI, string dataBaseIdLojas)
+		public NotionService(string token, string databaseId, string dataBaseIdKPI, string dataBaseIdLojas, string dataBaseIdStockParado)
         {
 			_token = token;
             _dataBaseId = databaseId;
 			_dataBaseIdKPI = dataBaseIdKPI;
 			_dataBaseIdLoja = dataBaseIdLojas;
+			_dataBaseIdStockParado = dataBaseIdStockParado;
 			_client.DefaultRequestHeaders.Clear();
 			_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
 			_client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
 			_client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+		}
+
+		public NotionService(string dataBaseIdLojas)
+		{
+			_token = "";
+			_dataBaseId = "";
+			_dataBaseIdKPI = "";
+			_dataBaseIdLoja = dataBaseIdLojas;
 		}
 
 		private async Task<(string Nome, string Cod, string Loja)> GetNameAndIdCached(string idRelacionado)
@@ -91,6 +102,62 @@ namespace Gerador_PDF.Services
 			}
 		}
 
+		private void SalvarLojaNoBanco(string nome)
+		{
+			using (var conn = new SqliteConnection("Data Source=lojas.db"))
+			{
+				conn.Open();
+
+				string sql = "INSERT OR IGNORE INTO Lojas (Nome) VALUES (@nome)"; // UUID vazio por enquanto
+				using (var cmd = new SqliteCommand(sql, conn))
+				{
+					cmd.Parameters.AddWithValue("@nome", nome);
+					cmd.ExecuteNonQuery();
+				}
+			}
+		}
+
+
+		public async Task CarregarLojasParaBaseLocalAsync()
+		{
+			var url = $"https://api.notion.com/v1/databases/{_dataBaseIdLoja}/query";
+
+			var request = new HttpRequestMessage(HttpMethod.Post, url)
+			{
+				Content = new StringContent("{}", Encoding.UTF8, "application/json")
+			};
+
+			var response = await _client.SendAsync(request);
+			var responseContent = await response.Content.ReadAsStringAsync();
+
+			if (!response.IsSuccessStatusCode)
+			{
+				Console.WriteLine($"Erro ao buscar lojas: {response.StatusCode}");
+				Console.WriteLine($"Detalhes do erro: {responseContent}");
+				return;
+			}
+
+			var jsonResponse = JObject.Parse(responseContent);
+			var results = jsonResponse["results"] as JArray;
+
+			if (results == null || results.Count == 0)
+			{
+				Console.WriteLine("Nenhuma loja encontrada.");
+				return;
+			}
+
+			foreach (var item in results)
+			{
+				var nome = item["properties"]?["Loja"]?["title"]?.FirstOrDefault()?["text"]?["content"]?.ToString();
+
+				if (!string.IsNullOrWhiteSpace(nome))
+				{
+					SalvarLojaNoBanco(nome); // Apenas nome, sem UUID
+				}
+			}
+		}
+
+
 		public async Task<string> GetLojaUUID(string lojaNome)
 		{
 			var url = $"https://api.notion.com/v1/databases/{_dataBaseIdLoja}/query";
@@ -133,8 +200,6 @@ namespace Gerador_PDF.Services
 			var todasLojas = monthStores.Select(f => f.loja)
 				.Distinct()
 				.ToList();
-
-			Console.WriteLine($"🔍 Lojas encontradas: {string.Join(", ", todasLojas)}");
 
 			var lojaUUIDMap = new Dictionary<string, string>();
 			foreach (var loja in todasLojas)
@@ -286,7 +351,176 @@ namespace Gerador_PDF.Services
 				}
 			}
 		}
+		private async Task<List<(string PageId, string Eurocode)>> GetAllStockPagesFromNotion(string databaseId, string lojaId)
+		{
+			var results = new List<(string, string)>();
 
+			var searchBody = new
+			{
+				filter = new
+				{
+					property = "Loja",
+					relation = new { contains = lojaId }
+				}
+			};
+			string json = JsonConvert.SerializeObject(searchBody);
+
+			var response = await _client.PostAsync(
+				"https://api.notion.com/v1/databases/" + databaseId + "/query",
+				new StringContent(json, Encoding.UTF8, "application/json")
+			);
+
+			var content = await response.Content.ReadAsStringAsync();
+			if (!response.IsSuccessStatusCode)
+			{
+				Console.WriteLine($"🔎 Falha ao buscar páginas de estoque: {response.StatusCode}\n{content}");
+				return results;
+			}
+
+			dynamic resultado = JsonConvert.DeserializeObject(content);
+			foreach (var item in resultado.results)
+			{
+				string pageId = item.id;
+				string eurocode = "";
+
+				try
+				{
+					Console.WriteLine($"Eurocode: {item.properties.Eurocode}");
+					Console.WriteLine($"rich_text: {item.properties.Eurocode.rich_text[0]}");
+					Console.WriteLine("YAHH");
+					Console.WriteLine($"text: {item.properties.Eurocode.rich_text[0].text}");
+					Console.WriteLine($"conten: {item.properties.Eurocode.rich_text[0].text.content}");
+					eurocode = item.properties.Eurocode.rich_text[0].text.content;
+				}
+				catch
+				{
+					Console.WriteLine($"⚠️ Página {pageId} sem campo 'Eurocode' corretamente preenchido.");
+				}
+
+				results.Add((pageId, eurocode));
+			}
+
+			return results;
+		}
+
+
+		private async Task DeletePage(string pageId)
+		{
+			var url = $"https://api.notion.com/v1/pages/{pageId}";
+			var request = new HttpRequestMessage(HttpMethod.Patch, url)
+			{
+				Content = new StringContent("{\"archived\": true}", Encoding.UTF8, "application/json")
+			};
+			var response = await _client.SendAsync(request);
+			if (!response.IsSuccessStatusCode)
+			{
+				var msg = await response.Content.ReadAsStringAsync();
+				Console.WriteLine($"⚠️ Erro ao arquivar página {pageId}: {msg}");
+			}
+		}
+
+
+		public async Task updateStockParado(List<stockParadoData> stockParado)
+		{
+			var databaseId = "1dda53a05781801e9befc4a3824cff02";
+			var url = "https://api.notion.com/v1/pages";
+
+			var uuid = await GetLojaUUID(stockParado[0].loja);
+			if (string.IsNullOrEmpty(uuid))
+			{
+				Console.WriteLine($"⚠️ Loja '{stockParado[0].loja}' não encontrada.");
+				return;
+			}
+			var paginasNotion = await GetAllStockPagesFromNotion(databaseId, uuid);
+			foreach (var pagina in paginasNotion)
+			{
+				string eurocodeNotion = pagina.Eurocode;
+				if (!stockParado.Any(s => s.euroCode == pagina.Eurocode))
+				{
+					await DeletePage(pagina.PageId);
+				}
+			}
+			foreach (var item in stockParado)
+			{
+				var paginaExistente = paginasNotion.FirstOrDefault(p => p.Eurocode == item.euroCode);
+				string existingPageId = paginaExistente.PageId;
+				var properties = new Dictionary<string, object>
+				{
+					["Loja"] = new { relation = new[] { new { id = uuid } } },
+					["Familia"] = new { title = new[] { new { text = new { content = item.famillia } } } },
+					["Eurocode"] = new { rich_text = new[] { new { text = new { content = item.euroCode } } } },
+					["Descricao"] = new { rich_text = new[] { new { text = new { content = item.descricao } } } },
+					["Stock"] = new { number = item.stock }
+				};
+
+				if (existingPageId == null && !string.IsNullOrEmpty(item.euroCode))
+				{
+					var createBody = new
+					{
+						parent = new { database_id = databaseId },
+						properties
+					};
+
+					var request = new HttpRequestMessage(HttpMethod.Post, url)
+					{
+						Content = new StringContent(JsonConvert.SerializeObject(createBody), Encoding.UTF8, "application/json")
+					};
+
+					var response = await _client.SendAsync(request);
+					var responseContent = await response.Content.ReadAsStringAsync();
+
+					if (!response.IsSuccessStatusCode)
+					{
+						Console.WriteLine($"⚠️ Erro ao criar página: {responseContent}");
+					}
+				}
+			}
+
+		}
+
+		private async Task<string?> searchStock(string databaseId, string lojaId, string euroCode)
+		{
+			var filter = new
+			{
+				filter = new
+				{
+					and = new object[]
+					{
+				new
+				{
+					property = "Loja",
+					relation = new { contains = lojaId }
+				},
+				new
+				{
+					property = "Eurocode",
+					rich_text = new { equals = euroCode }
+				}
+					}
+				}
+			};
+
+			string json = JsonConvert.SerializeObject(filter);
+			var response = await _client.PostAsync(
+				$"https://api.notion.com/v1/databases/{databaseId}/query",
+				new StringContent(json, Encoding.UTF8, "application/json")
+			);
+
+			var content = await response.Content.ReadAsStringAsync();
+			if (!response.IsSuccessStatusCode)
+			{
+				Console.WriteLine($"🔎 Falha ao buscar página existente: {response.StatusCode}\n{content}");
+				return null;
+			}
+
+			dynamic resultado = JsonConvert.DeserializeObject(content);
+			if (resultado.results.Count > 0)
+			{
+				return resultado.results[0].id;
+			}
+
+			return null;
+		}
 		private async Task<string?> BuscarPaginaExistente(string databaseId, string lojaId, string mes)
 		{
 			var filter = new

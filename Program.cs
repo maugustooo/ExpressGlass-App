@@ -2,8 +2,9 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using Gerador_PDF.Services;
 using Newtonsoft.Json;
-
+using SQLitePCL;
 namespace Gerador_ecxel
 {
     internal static class Program
@@ -17,18 +18,20 @@ namespace Gerador_ecxel
 		//static extern bool AllocConsole();
 		static void Main()
 		{
+			SQLitePCL.Batteries_V2.Init();
 			string logPath = "log.txt";
 			FileStream fs = new FileStream(logPath, FileMode.Append, FileAccess.Write);
 			StreamWriter sw = new StreamWriter(fs);
 			sw.AutoFlush = true;
 			Console.SetOut(sw);
 			Console.SetError(sw);
-
 			try
 			{
 				Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 				ApplicationConfiguration.Initialize();
 				var config = NotionConfigHelper.GetConfig();
+				Form1 form = new Form1(config);
+				Application.Run(form);
 
 				if (config == null)
 				{
@@ -36,7 +39,6 @@ namespace Gerador_ecxel
 					return;
 				}
 
-				Application.Run(new Form1(config));
 			}
 			finally
 			{

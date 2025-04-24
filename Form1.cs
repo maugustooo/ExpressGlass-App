@@ -7,6 +7,7 @@ using ExcelDataReader;
 using Gerador_PDF.Services;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using Microsoft.Data.Sqlite;
 
 namespace Gerador_ecxel
 {
@@ -18,7 +19,9 @@ namespace Gerador_ecxel
 		public Form1(Config config)
 		{
 			InitializeComponent();
-			notionService = new NotionService(config.NotionApiKey, config.NotionDatabaseId, config.NotionDatabaseIdKPIs, config.NotionDatabaseIdLojas);
+			//consola c = new consola(config, this);
+			//c.createDataBase();
+			notionService = new NotionService(config.NotionApiKey, config.NotionDatabaseId, config.NotionDatabaseIdKPIs, config.NotionDatabaseIdLojas, config.NotionDatabaseIdStockParado);
 		}
 
 		private async void GerarPdf_Click(object sender, EventArgs e)
@@ -35,6 +38,7 @@ namespace Gerador_ecxel
 				var databaseId = config.NotionDatabaseId;
 				var notionKeyKPIs = config.NotionDatabaseIdKPIs;
 				var notionKeyLojas = config.NotionDatabaseIdLojas;
+				var notionKeyStockParado = config.NotionDatabaseIdStockParado;
 				if (notionKey == null || databaseId == null)
 				{
 					progressBar1.Visible = false;
@@ -42,7 +46,7 @@ namespace Gerador_ecxel
 					MessageBox.Show("Erro: Chaves de API não foram definidas.");
 					return;
 				}
-				NotionService notionService = new NotionService(notionKey, databaseId, notionKeyKPIs, notionKeyLojas);
+				NotionService notionService = new NotionService(notionKey, databaseId, notionKeyKPIs, notionKeyLojas, notionKeyStockParado);
 				List<string[]> entries = await notionService.GetDatabase();
 				pdfGenerator pdfGenerator = new pdfGenerator(entries, this, _folderPath);
 			}
@@ -109,7 +113,7 @@ namespace Gerador_ecxel
 				try
 				{
 					var selectedItem = comboBox1.SelectedItem != null ? comboBox1.SelectedItem.ToString() : "";
-					readExcel readExcel = new readExcel(excelPath, selectedItem);
+					readExcel readExcel = new readExcel(excelPath, selectedItem, "kpi");
 
 					statusLabel2.Text = "A atualizar Dados...";
 					statusLabel2.Visible = true;
@@ -144,6 +148,65 @@ namespace Gerador_ecxel
 			else
 			{
 				MessageBox.Show("Selecione um mês para eliminar.");
+			}
+		}
+		public void CarregarLojasNoComboBox()
+		{
+			//using (var conn = new SqliteConnection("Data Source=lojas.db"))
+			//{
+			//	conn.Open();
+			//	string sql = "SELECT Nome FROM Lojas";
+
+			//	using (var cmd = new SqliteCommand(sql, conn))
+			//	using (var reader = cmd.ExecuteReader())
+			//	{
+			//		comboBoxLojas.Items.Clear(); // Limpa antes de carregar
+			//		while (reader.Read())
+			//		{
+			//			string nome = reader.GetString(0);
+			//			comboBoxLojas.Items.Add(nome);
+			//		}
+			//	}
+			//}
+		}
+		private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
+		{
+
+		}
+
+		private async void button5_Click(object sender, EventArgs e)
+		{
+			OpenFileDialog openFileDialog = new OpenFileDialog
+			{
+				Filter = "Excel files (*.xlsx;*.xls)|*.xlsx;*.xls",
+				RestoreDirectory = true
+			};
+			if (openFileDialog.ShowDialog() == DialogResult.OK)
+			{
+				string excelPath = openFileDialog.FileName;
+				try
+				{
+					readExcel readExcel = new readExcel(excelPath, "", "stockParado");
+
+					label2.Text = "A atualizar Dados...";
+					label2.Visible = true;
+					label2.ForeColor = Color.Blue;
+					progressBar4.Style = ProgressBarStyle.Marquee;
+					progressBar4.Visible = true;
+					await notionService.updateStockParado(readExcel.stockParado);
+
+					label2.Visible = false;
+					progressBar4.Visible = false;
+					MessageBox.Show("Dados atualizados no Notion!");
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show("Erro ao ler o ficheiro Excel: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+			}
+			else
+			{
+				MessageBox.Show("Nenhum ficheiro selecionado", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 	}

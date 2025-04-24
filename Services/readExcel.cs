@@ -38,17 +38,29 @@ namespace Gerador_PDF.Services
 			public double NPS { get; set; }
 		}
 
+		public class stockParadoData
+		{
+			public string loja { get; set; }
+			public string famillia { get; set; }
+			public string euroCode { get; set; }
+			public string descricao { get; set; }
+			public double stock { get; set; }
+		}
+
+
 		public List<FaturadoData> ?faturados;
 		public List<ComplementarData> complementares;
 		public List<monthStoreData> monthStores;
+		public List<stockParadoData> stockParado;
 		public string mes { get; set; }
-		public readExcel(string excelPath, string selectedItem)
+		public readExcel(string excelPath, string selectedItem, string what)
         {
-			var dados = loadData(excelPath, selectedItem);
+			var dados = loadData(excelPath, selectedItem, what);
 
 			faturados = (List<FaturadoData>)dados["faturados"];
 			complementares = (List<ComplementarData>)dados["complementares"];
 			monthStores = (List<monthStoreData>)dados["monthStores"];
+			stockParado = (List<stockParadoData>)dados["stockParado"];
 			mes = (string)dados["mes"];
 		}
 
@@ -126,7 +138,7 @@ namespace Gerador_PDF.Services
 			return $"Lojas {abrev}{anoDoisDigitos}";
 		}
 
-		private Dictionary<string, object> loadData(string filePath, string monthSelected)
+		private Dictionary<string, object> loadData(string filePath, string monthSelected, string what)
 		{
 			string nomeSheet = null;
 			if (!string.IsNullOrEmpty(monthSelected))
@@ -136,6 +148,7 @@ namespace Gerador_PDF.Services
 			var faturadosList = new List<FaturadoData>();
 			var complementaresList = new List<ComplementarData>();
 			var monthStoreList = new List<monthStoreData>();
+			var stockParadoList = new List<stockParadoData>();
 			string mes = "";
 
 			using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
@@ -147,102 +160,133 @@ namespace Gerador_PDF.Services
 						ConfigureDataTable = _ => new ExcelDataTableConfiguration { UseHeaderRow = true }
 					});
 
-					if (result.Tables.Contains(nomeSheet))
-					{
-						monthStores = result.Tables[nomeSheet];
-
-						for (int linha = 2; linha <= 3; linha++)
+					if (what == "kpi")
+					{ 
+						if (result.Tables.Contains(nomeSheet))
 						{
-							if (!monthStores.Rows[linha].IsNull(1))
+							monthStores = result.Tables[nomeSheet];
+
+							for (int linha = 2; linha <= 3; linha++)
 							{
-								mes = monthStores.Rows[linha][1]?.ToString()?.Trim() ?? "";
-								if (!string.IsNullOrWhiteSpace(mes))
+								if (!monthStores.Rows[linha].IsNull(1))
 								{
-									mes = GetRigthMonth(mes);
-									break;
+									mes = monthStores.Rows[linha][1]?.ToString()?.Trim() ?? "";
+									if (!string.IsNullOrWhiteSpace(mes))
+									{
+										mes = GetRigthMonth(mes);
+										break;
+									}
 								}
 							}
-						}
 
-						monthStoreList = monthStores.AsEnumerable()
-							.Skip(5)
-							.Select(static row => new monthStoreData
+							monthStoreList = monthStores.AsEnumerable()
+								.Skip(5)
+								.Select(static row => new monthStoreData
+								{
+									loja = row.IsNull(1) ? string.Empty : row[1]?.ToString() ?? string.Empty,
+									NPS = TryRound(row, 27, 1),
+								})
+								.Where(data => !string.IsNullOrEmpty(data.loja))
+								.Distinct()
+								.ToList();
+
+							return new Dictionary<string, object>
+							{
+								{"mes", mes },
+								{"faturados", faturadosList},
+								{"complementares", complementaresList},
+								{"monthStores", monthStoreList},
+								{"stockParado", stockParadoList}
+							};
+						}
+						var faturadosTable = result.Tables["Faturados"];
+						if (faturadosTable != null)
+						{
+							for (int linha = 6; linha <= 7; linha++)
+							{
+								for (int coluna = 1; coluna <= 2; coluna++)
+								{
+									if (!faturadosTable.Rows[linha].IsNull(coluna))
+									{
+										mes = faturadosTable.Rows[linha][coluna]?.ToString()?.Trim() ?? "";
+										if (!string.IsNullOrWhiteSpace(mes))
+											break;
+									}
+								}
+								if (!string.IsNullOrWhiteSpace(mes))
+									break;
+							}
+							faturadosList = faturadosTable.AsEnumerable()
+							.Skip(9)
+							.Select(static row => new FaturadoData
 							{
 								loja = row.IsNull(1) ? string.Empty : row[1]?.ToString() ?? string.Empty,
-								NPS = TryRound(row, 27, 1),
+								faturados = TryRound(row, 2, 1),
+								fte = TryRound(row, 3, 1),
+								objAoDia = TryRound(row, 4, 0),
+								objMes = TryRound(row, 5, 0),
+								taxRep = TryRound(row, 9, 2),
+								qntRep = TryRound(row, 10, 0)
+
 							})
 							.Where(data => !string.IsNullOrEmpty(data.loja))
 							.Distinct()
 							.ToList();
 
+						}
+						var complementaresTable = result.Tables["Complementares"];
+						if (complementaresTable != null)
+						{
+							complementaresList = complementaresTable.AsEnumerable()
+							.Skip(10)
+							.Select(row => new ComplementarData
+							{
+								lojas = row.IsNull(2) ? string.Empty : row[2]?.ToString() ?? string.Empty,
+								vaps = TryRound(row, 3, 1),
+								escovas = TryRound(row, 6, 1),
+								escovasPercent = TryRound(row, 7, 2),
+								polimento = TryRound(row, 8, 0)
+							})
+							.ToList();
+						}
+						Console.WriteLine($"mes: {mes}");
 						return new Dictionary<string, object>
 						{
 							{"mes", mes },
 							{"faturados", faturadosList},
 							{"complementares", complementaresList},
-							{"monthStores", monthStoreList}
+							{"monthStores", monthStoreList},
+							{"stockParado", stockParadoList}
 						};
 					}
-					var faturadosTable = result.Tables["Faturados"];
-					if (faturadosTable != null)
+					else
 					{
-						for (int linha = 6; linha <= 7; linha++)
+						var stockParadoTable = result.Tables[0];
+						if (stockParadoTable != null)
 						{
-							for (int coluna = 1; coluna <= 2; coluna++)
+							stockParadoList = stockParadoTable.AsEnumerable()
+							.Skip(1)
+							.Select(row => new stockParadoData
 							{
-								if (!faturadosTable.Rows[linha].IsNull(coluna))
-								{
-									mes = faturadosTable.Rows[linha][coluna]?.ToString()?.Trim() ?? "";
-									if (!string.IsNullOrWhiteSpace(mes))
-										break;
-								}
-							}
-							if (!string.IsNullOrWhiteSpace(mes))
-								break;
+								loja = row.IsNull(0) ? string.Empty : row[0]?.ToString() ?? string.Empty,
+								famillia = row.IsNull(1) ? string.Empty : row[1]?.ToString() ?? string.Empty,
+								euroCode = row.IsNull(2) ? string.Empty : row[2]?.ToString() ?? string.Empty,
+								descricao = row.IsNull(3) ? string.Empty : row[3]?.ToString() ?? string.Empty,
+								stock = TryRound(row, 4, 0)
+							})
+							.ToList();
 						}
-						faturadosList = faturadosTable.AsEnumerable()
-						.Skip(9)
-						.Select(static row => new FaturadoData
+						return new Dictionary<string, object>
 						{
-							loja = row.IsNull(1) ? string.Empty : row[1]?.ToString() ?? string.Empty,
-							faturados = TryRound(row, 2, 1),
-							fte = TryRound(row, 3, 1),
-							objAoDia = TryRound(row, 4, 0),
-							objMes = TryRound(row, 5, 0),
-							taxRep = TryRound(row, 9, 2),
-							qntRep = TryRound(row, 10, 0)
-
-						})
-						.Where(data => !string.IsNullOrEmpty(data.loja))
-						.Distinct()
-						.ToList();
-
-					}
-					var complementaresTable = result.Tables["Complementares"];
-					if (complementaresTable != null)
-					{
-						complementaresList = complementaresTable.AsEnumerable()
-						.Skip(10)
-						.Select(row => new ComplementarData
-						{
-							lojas = row.IsNull(2) ? string.Empty : row[2]?.ToString() ?? string.Empty,
-							vaps = TryRound(row, 3, 1),
-							escovas = TryRound(row, 6, 1),
-							escovasPercent = TryRound(row, 7, 2),
-							polimento = TryRound(row, 8, 0)
-						})
-						.ToList();
+							{"mes", mes },
+							{"faturados", faturadosList},
+							{"complementares", complementaresList},
+							{"monthStores", monthStoreList},
+							{"stockParado", stockParadoList}
+						};
 					}
 				}
 			}
-			Console.WriteLine($"mes: {mes}");
-			return new Dictionary<string, object>
-			{
-				{"mes", mes },
-				{"faturados", faturadosList},
-				{"complementares", complementaresList},
-				{"monthStores", monthStoreList}
-			};
 		}
 	}
 }
