@@ -425,58 +425,71 @@ namespace Gerador_PDF.Services
 			var databaseId = "1dda53a05781801e9befc4a3824cff02";
 			var url = "https://api.notion.com/v1/pages";
 
-			var uuid = await GetLojaUUID(stockParado[0].loja);
-			if (string.IsNullOrEmpty(uuid))
+			var lojasAgrupadas = stockParado.GroupBy(s => s.loja);
+			var families = new HashSet<string> { "VL", "PB", "OC", "TE"};
+
+			foreach (var grupoLoja in lojasAgrupadas)
 			{
-				Console.WriteLine($"⚠️ Loja '{stockParado[0].loja}' não encontrada.");
-				return;
-			}
-			var paginasNotion = await GetAllStockPagesFromNotion(databaseId, uuid);
-			foreach (var pagina in paginasNotion)
-			{
-				string eurocodeNotion = pagina.Eurocode;
-				if (!stockParado.Any(s => s.euroCode == pagina.Eurocode))
+				var loja = grupoLoja.Key;
+				if (string.IsNullOrEmpty(loja)) continue;
+				var uuid = await GetLojaUUID(loja);
+
+				if (string.IsNullOrEmpty(uuid))
 				{
-					await DeletePage(pagina.PageId);
+					Console.WriteLine($"⚠️ Loja '{loja}' não encontrada.");
+					continue;
 				}
-			}
-			foreach (var item in stockParado)
-			{
-				var paginaExistente = paginasNotion.FirstOrDefault(p => p.Eurocode == item.euroCode);
-				string existingPageId = paginaExistente.PageId;
-				var properties = new Dictionary<string, object>
-				{
-					["Loja"] = new { relation = new[] { new { id = uuid } } },
-					["Familia"] = new { title = new[] { new { text = new { content = item.famillia } } } },
-					["Eurocode"] = new { rich_text = new[] { new { text = new { content = item.euroCode } } } },
-					["Descricao"] = new { rich_text = new[] { new { text = new { content = item.descricao } } } },
-					["Stock"] = new { number = item.stock }
-				};
 
-				if (existingPageId == null && !string.IsNullOrEmpty(item.euroCode))
+				var paginasNotion = await GetAllStockPagesFromNotion(databaseId, uuid);
+
+				foreach (var pagina in paginasNotion)
 				{
-					var createBody = new
+					if (!grupoLoja.Any(s => s.euroCode == pagina.Eurocode))
 					{
-						parent = new { database_id = databaseId },
-						properties
+						await DeletePage(pagina.PageId);
+					}
+				}
+
+				foreach (var item in grupoLoja)
+				{
+					var paginaExistente = paginasNotion.FirstOrDefault(p => p.Eurocode == item.euroCode);
+					string existingPageId = paginaExistente.PageId;
+					if (!families.Contains(item.famillia?.Trim().ToUpper()) || item.stock <= 0)
+						continue;
+					var properties = new Dictionary<string, object>
+					{
+						["Loja"] = new { relation = new[] { new { id = uuid } } },
+						["Familia"] = new { title = new[] { new { text = new { content = item.famillia } } } },
+						["Eurocode"] = new { rich_text = new[] { new { text = new { content = item.euroCode } } } },
+						["Descricao"] = new { rich_text = new[] { new { text = new { content = item.descricao } } } },
+						["Stock"] = new { number = item.stock }
 					};
 
-					var request = new HttpRequestMessage(HttpMethod.Post, url)
+					if (existingPageId == null && !string.IsNullOrEmpty(item.euroCode))
 					{
-						Content = new StringContent(JsonConvert.SerializeObject(createBody), Encoding.UTF8, "application/json")
-					};
+						var createBody = new
+						{
+							parent = new { database_id = databaseId },
+							properties
+						};
 
-					var response = await _client.SendAsync(request);
-					var responseContent = await response.Content.ReadAsStringAsync();
+						var request = new HttpRequestMessage(HttpMethod.Post, url)
+						{
+							Content = new StringContent(JsonConvert.SerializeObject(createBody), Encoding.UTF8, "application/json")
+						};
 
-					if (!response.IsSuccessStatusCode)
-					{
-						Console.WriteLine($"⚠️ Erro ao criar página: {responseContent}");
+						var response = await _client.SendAsync(request);
+						var responseContent = await response.Content.ReadAsStringAsync();
+
+						if (!response.IsSuccessStatusCode)
+						{
+							Console.WriteLine($"⚠️ Erro ao criar página para eurocode {item.euroCode}: {responseContent}");
+						}
 					}
 				}
 			}
-
 		}
+
 
 		private async Task<string?> searchStock(string databaseId, string lojaId, string euroCode)
 		{

@@ -112,6 +112,24 @@ namespace Gerador_PDF.Services
 				throw new ArgumentException("Data inválida");
 			}
 		}
+
+		private string ConvertStore(double store)
+		{
+			if (store == 18)
+				return "BRAGA - MINHO CENTER";
+			else if (store == 52)
+				return "BRAGA SM";
+			else if (store == 9)
+				return "FAMALICÃO";
+			else if (store == 61)
+				return "FAMALICÃO SM";
+			else if (store == 34)
+				return "VIANA DO CASTELO";
+			else if (store == 85)
+				return "VIANA DO CASTELO SM";
+			else
+				return "";
+		}
 		private string GetSheetName(string mesComboBox, int ano)
 		{
 			var abrevs = new Dictionary<string, string>
@@ -261,21 +279,23 @@ namespace Gerador_PDF.Services
 					}
 					else
 					{
-						var stockParadoTable = result.Tables[0];
+						var stockParadoTable = result.Tables[1];
 						if (stockParadoTable != null)
 						{
 							stockParadoList = stockParadoTable.AsEnumerable()
-							.Skip(1)
+							.Skip(0)
 							.Select(row => new stockParadoData
 							{
-								loja = row.IsNull(0) ? string.Empty : row[0]?.ToString() ?? string.Empty,
-								famillia = row.IsNull(1) ? string.Empty : row[1]?.ToString() ?? string.Empty,
-								euroCode = row.IsNull(2) ? string.Empty : row[2]?.ToString() ?? string.Empty,
-								descricao = row.IsNull(3) ? string.Empty : row[3]?.ToString() ?? string.Empty,
+								euroCode = row.IsNull(0) ? string.Empty : row[0]?.ToString()?.Trim() ?? string.Empty,
+								famillia = row.IsNull(1) ? string.Empty : row[1]?.ToString()?.Trim() ?? string.Empty,
+								descricao = row.IsNull(2) ? string.Empty : row[2]?.ToString()?.Trim() ?? string.Empty,
+								loja =  ConvertStore(TryRound(row, 3, 0)),
 								stock = TryRound(row, 4, 0)
 							})
 							.ToList();
 						}
+
+
 						return new Dictionary<string, object>
 						{
 							{"mes", mes },
