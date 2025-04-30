@@ -32,6 +32,7 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
 			bindingSource1 = new BindingSource(components);
 			tabPage2 = new TabPage();
+			label5 = new Label();
 			label4 = new Label();
 			statusLabel2 = new Label();
 			progressBar3 = new ProgressBar();
@@ -65,7 +66,6 @@
 			label3 = new Label();
 			pictureBox4 = new PictureBox();
 			backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-			label5 = new Label();
 			((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
 			tabPage2.SuspendLayout();
 			panel3.SuspendLayout();
@@ -101,6 +101,16 @@
 			tabPage2.Size = new Size(905, 503);
 			tabPage2.TabIndex = 1;
 			tabPage2.Text = "KPI'S Diários";
+			// 
+			// label5
+			// 
+			label5.AutoSize = true;
+			label5.Font = new Font("Segoe UI", 12F);
+			label5.Location = new Point(299, 129);
+			label5.Name = "label5";
+			label5.Size = new Size(223, 21);
+			label5.TabIndex = 15;
+			label5.Text = "(Apenas para atualizar os NPS)";
 			// 
 			// label4
 			// 
@@ -444,6 +454,7 @@
 			button1.TabIndex = 14;
 			button1.Text = "Atualizar Dados da API";
 			button1.UseVisualStyleBackColor = false;
+			button1.Click += resetData_Click;
 			button1.MouseEnter += GerarPdf_MouseEnter;
 			button1.MouseLeave += GerarPdf_MouseLeave;
 			// 
@@ -492,16 +503,6 @@
 			pictureBox4.Size = new Size(899, 80);
 			pictureBox4.TabIndex = 0;
 			pictureBox4.TabStop = false;
-			// 
-			// label5
-			// 
-			label5.AutoSize = true;
-			label5.Font = new Font("Segoe UI", 12F);
-			label5.Location = new Point(299, 129);
-			label5.Name = "label5";
-			label5.Size = new Size(223, 21);
-			label5.TabIndex = 15;
-			label5.Text = "(Apenas para atualizar os NPS)";
 			// 
 			// Form1
 			// 

@@ -49,6 +49,7 @@ namespace Gerador_ecxel
 				NotionService notionService = new NotionService(notionKey, databaseId, notionKeyKPIs, notionKeyLojas, notionKeyStockParado);
 				List<string[]> entries = await notionService.GetDatabase();
 				pdfGenerator pdfGenerator = new pdfGenerator(entries, this, _folderPath);
+				notionService.UpdateStatus();
 			}
 			catch (Exception ex)
 			{
@@ -88,12 +89,9 @@ namespace Gerador_ecxel
 
 		private void resetData_Click(object sender, EventArgs e)
 		{
-			var configPath = Path.Combine(Application.StartupPath, "notion_config.json");
+			var configPath = Path.Combine(Application.StartupPath, "NotionConfig.json");
 
-			if (File.Exists(configPath))
-				File.Delete(configPath);
-
-			var newConfig = NotionConfigHelper.GetConfig();
+			var newConfig = NotionConfigHelper.updateConfig(configPath);
 			if (newConfig == null)
 				MessageBox.Show("A atualização falhou ou foi cancelada", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			else

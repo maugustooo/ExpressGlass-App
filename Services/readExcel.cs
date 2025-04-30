@@ -279,7 +279,7 @@ namespace Gerador_PDF.Services
 					}
 					else
 					{
-						var stockParadoTable = result.Tables[1];
+						var stockParadoTable = result.Tables[0];
 						if (stockParadoTable != null)
 						{
 							stockParadoList = stockParadoTable.AsEnumerable()

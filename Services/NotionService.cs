@@ -422,7 +422,7 @@ namespace Gerador_PDF.Services
 
 		public async Task updateStockParado(List<stockParadoData> stockParado)
 		{
-			var databaseId = "1dda53a05781801e9befc4a3824cff02";
+			var databaseId = _dataBaseIdStockParado;
 			var url = "https://api.notion.com/v1/pages";
 
 			var lojasAgrupadas = stockParado.GroupBy(s => s.loja);
