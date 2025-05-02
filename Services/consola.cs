@@ -22,8 +22,10 @@ namespace Gerador_PDF.Services
 		public async Task ExecutarAsync()
 		{
 			var notionService = new NotionService(_dataBaseIdLojas);
+			_form1.UpdateStatusBar(1);
 			await notionService.CarregarLojasParaBaseLocalAsync();
-			_form1.CarregarLojasNoComboBox();
+			_form1.UpdateStatusBar(2);
+			//_form1.CarregarLojasNoComboBox();
 		}
 		public void createDataBase()
 		{
@@ -38,9 +40,15 @@ namespace Gerador_PDF.Services
 				conn.Open();
 
 				string sql = @"
-                    CREATE TABLE IF NOT EXISTS Lojas (
+                    CREATE TABLE IF NOT EXISTS Data (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        Nome TEXT NOT NULL
+						NomeLoja TEXT NOT NULL,
+						ObjDia TEXT NOT NULL,
+						Faturados TEXT NOT NULL,
+						TaxaReparacao TEXT NOT NULL,
+						VAPS TEXT NOT NULL,
+						FTE TEXT NOT NULL,
+						QtdEscovas TEXT NOT NULL
                     )";
 
 				using (var cmd = new SqliteCommand(sql, conn))

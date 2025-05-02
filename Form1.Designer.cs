@@ -31,6 +31,33 @@
 			components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
 			bindingSource1 = new BindingSource(components);
+			backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+			tabPage3 = new TabPage();
+			panel9 = new Panel();
+			label9 = new Label();
+			button8 = new Button();
+			label7 = new Label();
+			button7 = new Button();
+			label10 = new Label();
+			textBox1 = new TextBox();
+			label11 = new Label();
+			monthConsola = new ComboBox();
+			progressBar5 = new ProgressBar();
+			panel6 = new Panel();
+			button2 = new Button();
+			button6 = new Button();
+			panel8 = new Panel();
+			label8 = new Label();
+			pictureBox3 = new PictureBox();
+			tabPage5 = new TabPage();
+			label6 = new Label();
+			progressBar4 = new ProgressBar();
+			panel5 = new Panel();
+			button1 = new Button();
+			button5 = new Button();
+			panel7 = new Panel();
+			label3 = new Label();
+			pictureBox4 = new PictureBox();
 			tabPage2 = new TabPage();
 			label5 = new Label();
 			label4 = new Label();
@@ -56,17 +83,18 @@
 			statusLabel = new Label();
 			progressBar1 = new ProgressBar();
 			tabControl1 = new TabControl();
-			tabPage5 = new TabPage();
-			label6 = new Label();
-			progressBar4 = new ProgressBar();
-			panel5 = new Panel();
-			button1 = new Button();
-			button5 = new Button();
-			panel7 = new Panel();
-			label3 = new Label();
-			pictureBox4 = new PictureBox();
-			backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+			statusStrip1 = new StatusStrip();
+			toolStripProgressBar1 = new ToolStripProgressBar();
 			((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
+			tabPage3.SuspendLayout();
+			panel9.SuspendLayout();
+			panel6.SuspendLayout();
+			panel8.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
+			tabPage5.SuspendLayout();
+			panel5.SuspendLayout();
+			panel7.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)pictureBox4).BeginInit();
 			tabPage2.SuspendLayout();
 			panel3.SuspendLayout();
 			panel4.SuspendLayout();
@@ -76,11 +104,320 @@
 			panel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
 			tabControl1.SuspendLayout();
-			tabPage5.SuspendLayout();
-			panel5.SuspendLayout();
-			panel7.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)pictureBox4).BeginInit();
+			statusStrip1.SuspendLayout();
 			SuspendLayout();
+			// 
+			// tabPage3
+			// 
+			tabPage3.BackColor = Color.Gainsboro;
+			tabPage3.BackgroundImageLayout = ImageLayout.None;
+			tabPage3.Controls.Add(panel9);
+			tabPage3.Controls.Add(monthConsola);
+			tabPage3.Controls.Add(progressBar5);
+			tabPage3.Controls.Add(panel6);
+			tabPage3.Controls.Add(button6);
+			tabPage3.Controls.Add(panel8);
+			tabPage3.Font = new Font("Segoe UI", 25F);
+			tabPage3.Location = new Point(4, 24);
+			tabPage3.Name = "tabPage3";
+			tabPage3.Padding = new Padding(3);
+			tabPage3.Size = new Size(905, 531);
+			tabPage3.TabIndex = 6;
+			tabPage3.Text = "Consola";
+			// 
+			// panel9
+			// 
+			panel9.Controls.Add(label9);
+			panel9.Controls.Add(button8);
+			panel9.Controls.Add(label7);
+			panel9.Controls.Add(button7);
+			panel9.Controls.Add(label10);
+			panel9.Controls.Add(textBox1);
+			panel9.Controls.Add(label11);
+			panel9.Location = new Point(269, 174);
+			panel9.Name = "panel9";
+			panel9.Size = new Size(581, 181);
+			panel9.TabIndex = 27;
+			// 
+			// label9
+			// 
+			label9.AutoSize = true;
+			label9.Location = new Point(36, 16);
+			label9.Name = "label9";
+			label9.Size = new Size(142, 46);
+			label9.TabIndex = 21;
+			label9.Text = "Serviços";
+			// 
+			// button8
+			// 
+			button8.FlatAppearance.BorderSize = 0;
+			button8.Font = new Font("Segoe UI", 30F);
+			button8.Location = new Point(36, 129);
+			button8.Name = "button8";
+			button8.Size = new Size(65, 49);
+			button8.TabIndex = 26;
+			button8.Text = "←";
+			button8.TextAlign = ContentAlignment.TopCenter;
+			button8.UseVisualStyleBackColor = true;
+			button8.Click += button8_Click;
+			// 
+			// label7
+			// 
+			label7.AutoSize = true;
+			label7.Font = new Font("Segoe UI", 23F);
+			label7.Location = new Point(242, 156);
+			label7.Name = "label7";
+			label7.Size = new Size(0, 42);
+			label7.TabIndex = 17;
+			label7.TextAlign = ContentAlignment.MiddleCenter;
+			label7.Visible = false;
+			// 
+			// button7
+			// 
+			button7.FlatAppearance.BorderSize = 0;
+			button7.Font = new Font("Segoe UI", 30F);
+			button7.Location = new Point(113, 129);
+			button7.Name = "button7";
+			button7.Size = new Size(65, 49);
+			button7.TabIndex = 25;
+			button7.Text = "→";
+			button7.TextAlign = ContentAlignment.TopCenter;
+			button7.UseVisualStyleBackColor = true;
+			button7.Click += button7_Click;
+			// 
+			// label10
+			// 
+			label10.AutoSize = true;
+			label10.Font = new Font("Segoe UI", 18F);
+			label10.Location = new Point(36, 62);
+			label10.Name = "label10";
+			label10.Size = new Size(78, 32);
+			label10.TabIndex = 22;
+			label10.Text = "data1:";
+			// 
+			// textBox1
+			// 
+			textBox1.Location = new Point(184, 33);
+			textBox1.Multiline = true;
+			textBox1.Name = "textBox1";
+			textBox1.Size = new Size(371, 145);
+			textBox1.TabIndex = 24;
+			// 
+			// label11
+			// 
+			label11.AutoSize = true;
+			label11.Font = new Font("Segoe UI", 18F);
+			label11.Location = new Point(36, 94);
+			label11.Name = "label11";
+			label11.Size = new Size(78, 32);
+			label11.TabIndex = 23;
+			label11.Text = "data2:";
+			// 
+			// monthConsola
+			// 
+			monthConsola.AutoCompleteSource = AutoCompleteSource.ListItems;
+			monthConsola.Cursor = Cursors.Hand;
+			monthConsola.DropDownHeight = 500;
+			monthConsola.DropDownStyle = ComboBoxStyle.DropDownList;
+			monthConsola.Font = new Font("Segoe UI", 12F);
+			monthConsola.FormattingEnabled = true;
+			monthConsola.IntegralHeight = false;
+			monthConsola.ItemHeight = 21;
+			monthConsola.Items.AddRange(new object[] { "Janeiro", "Fevereiro", "Março", "Abril", "Junho", "Julho", "Agosto", "Setembro", "Novembro", "Dezembro" });
+			monthConsola.Location = new Point(704, 122);
+			monthConsola.MaxDropDownItems = 12;
+			monthConsola.MaxLength = 60;
+			monthConsola.Name = "monthConsola";
+			monthConsola.Size = new Size(173, 29);
+			monthConsola.TabIndex = 20;
+			// 
+			// progressBar5
+			// 
+			progressBar5.Location = new Point(406, 434);
+			progressBar5.Name = "progressBar5";
+			progressBar5.Size = new Size(328, 59);
+			progressBar5.TabIndex = 19;
+			progressBar5.Visible = false;
+			// 
+			// panel6
+			// 
+			panel6.BorderStyle = BorderStyle.FixedSingle;
+			panel6.Controls.Add(button2);
+			panel6.Dock = DockStyle.Left;
+			panel6.Font = new Font("Segoe UI", 15F);
+			panel6.Location = new Point(3, 83);
+			panel6.Name = "panel6";
+			panel6.Size = new Size(230, 445);
+			panel6.TabIndex = 16;
+			// 
+			// button2
+			// 
+			button2.BackColor = Color.LightGray;
+			button2.FlatAppearance.BorderSize = 0;
+			button2.FlatAppearance.MouseOverBackColor = Color.Black;
+			button2.FlatStyle = FlatStyle.Flat;
+			button2.Font = new Font("Segoe UI", 13F);
+			button2.Location = new Point(30, 23);
+			button2.Name = "button2";
+			button2.Size = new Size(160, 150);
+			button2.TabIndex = 14;
+			button2.Text = "Atualizar Dados da API";
+			button2.UseVisualStyleBackColor = false;
+			// 
+			// button6
+			// 
+			button6.BackColor = Color.Transparent;
+			button6.Font = new Font("Segoe UI", 15F);
+			button6.Location = new Point(406, 361);
+			button6.Name = "button6";
+			button6.Size = new Size(328, 53);
+			button6.TabIndex = 15;
+			button6.Text = "Gerar Pdf";
+			button6.UseVisualStyleBackColor = false;
+			button6.Click += button6_Click;
+			// 
+			// panel8
+			// 
+			panel8.BackColor = SystemColors.HotTrack;
+			panel8.Controls.Add(label8);
+			panel8.Controls.Add(pictureBox3);
+			panel8.Dock = DockStyle.Top;
+			panel8.Location = new Point(3, 3);
+			panel8.Name = "panel8";
+			panel8.Size = new Size(899, 80);
+			panel8.TabIndex = 6;
+			// 
+			// label8
+			// 
+			label8.AutoSize = true;
+			label8.BackColor = Color.FromArgb(7, 43, 101);
+			label8.Font = new Font("Segoe UI", 24.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+			label8.ForeColor = Color.Transparent;
+			label8.Location = new Point(385, 15);
+			label8.Name = "label8";
+			label8.Size = new Size(371, 45);
+			label8.TabIndex = 7;
+			label8.Text = "ExpressGlass - Consola";
+			// 
+			// pictureBox3
+			// 
+			pictureBox3.BackColor = Color.FromArgb(7, 43, 101);
+			pictureBox3.Dock = DockStyle.Fill;
+			pictureBox3.Image = (Image)resources.GetObject("pictureBox3.Image");
+			pictureBox3.Location = new Point(0, 0);
+			pictureBox3.Name = "pictureBox3";
+			pictureBox3.Size = new Size(899, 80);
+			pictureBox3.TabIndex = 0;
+			pictureBox3.TabStop = false;
+			// 
+			// tabPage5
+			// 
+			tabPage5.BackColor = Color.Gainsboro;
+			tabPage5.BackgroundImageLayout = ImageLayout.None;
+			tabPage5.Controls.Add(label6);
+			tabPage5.Controls.Add(progressBar4);
+			tabPage5.Controls.Add(panel5);
+			tabPage5.Controls.Add(button5);
+			tabPage5.Controls.Add(panel7);
+			tabPage5.Font = new Font("Segoe UI", 25F);
+			tabPage5.Location = new Point(4, 24);
+			tabPage5.Name = "tabPage5";
+			tabPage5.Padding = new Padding(3);
+			tabPage5.Size = new Size(905, 531);
+			tabPage5.TabIndex = 4;
+			tabPage5.Text = "Stock Parado";
+			// 
+			// label6
+			// 
+			label6.AutoSize = true;
+			label6.Font = new Font("Segoe UI", 23F);
+			label6.Location = new Point(499, 330);
+			label6.Name = "label6";
+			label6.Size = new Size(0, 42);
+			label6.TabIndex = 17;
+			label6.TextAlign = ContentAlignment.MiddleCenter;
+			label6.Visible = false;
+			// 
+			// progressBar4
+			// 
+			progressBar4.Location = new Point(406, 434);
+			progressBar4.Name = "progressBar4";
+			progressBar4.Size = new Size(328, 59);
+			progressBar4.TabIndex = 19;
+			progressBar4.Visible = false;
+			// 
+			// panel5
+			// 
+			panel5.BorderStyle = BorderStyle.FixedSingle;
+			panel5.Controls.Add(button1);
+			panel5.Dock = DockStyle.Left;
+			panel5.Location = new Point(3, 83);
+			panel5.Name = "panel5";
+			panel5.Size = new Size(230, 445);
+			panel5.TabIndex = 16;
+			// 
+			// button1
+			// 
+			button1.BackColor = Color.LightGray;
+			button1.FlatAppearance.BorderSize = 0;
+			button1.FlatAppearance.MouseOverBackColor = Color.Black;
+			button1.FlatStyle = FlatStyle.Flat;
+			button1.Font = new Font("Segoe UI", 13F);
+			button1.Location = new Point(30, 23);
+			button1.Name = "button1";
+			button1.Size = new Size(160, 150);
+			button1.TabIndex = 14;
+			button1.Text = "Atualizar Dados da API";
+			button1.UseVisualStyleBackColor = false;
+			button1.Click += resetData_Click;
+			button1.MouseEnter += GerarPdf_MouseEnter;
+			button1.MouseLeave += GerarPdf_MouseLeave;
+			// 
+			// button5
+			// 
+			button5.BackColor = Color.Transparent;
+			button5.Font = new Font("Segoe UI", 15F);
+			button5.Location = new Point(406, 163);
+			button5.Name = "button5";
+			button5.Size = new Size(328, 53);
+			button5.TabIndex = 15;
+			button5.Text = "Importar Excel";
+			button5.UseVisualStyleBackColor = false;
+			button5.Click += button5_Click;
+			// 
+			// panel7
+			// 
+			panel7.BackColor = SystemColors.HotTrack;
+			panel7.Controls.Add(label3);
+			panel7.Controls.Add(pictureBox4);
+			panel7.Dock = DockStyle.Top;
+			panel7.Location = new Point(3, 3);
+			panel7.Name = "panel7";
+			panel7.Size = new Size(899, 80);
+			panel7.TabIndex = 6;
+			// 
+			// label3
+			// 
+			label3.AutoSize = true;
+			label3.BackColor = Color.FromArgb(7, 43, 101);
+			label3.Font = new Font("Segoe UI", 24.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+			label3.ForeColor = Color.Transparent;
+			label3.Location = new Point(385, 15);
+			label3.Name = "label3";
+			label3.Size = new Size(450, 45);
+			label3.TabIndex = 7;
+			label3.Text = "ExpressGlass - Stock Parado";
+			// 
+			// pictureBox4
+			// 
+			pictureBox4.BackColor = Color.FromArgb(7, 43, 101);
+			pictureBox4.Dock = DockStyle.Fill;
+			pictureBox4.Image = (Image)resources.GetObject("pictureBox4.Image");
+			pictureBox4.Location = new Point(0, 0);
+			pictureBox4.Name = "pictureBox4";
+			pictureBox4.Size = new Size(899, 80);
+			pictureBox4.TabIndex = 0;
+			pictureBox4.TabStop = false;
 			// 
 			// tabPage2
 			// 
@@ -98,7 +435,7 @@
 			tabPage2.Location = new Point(4, 24);
 			tabPage2.Name = "tabPage2";
 			tabPage2.Padding = new Padding(3);
-			tabPage2.Size = new Size(905, 503);
+			tabPage2.Size = new Size(905, 531);
 			tabPage2.TabIndex = 1;
 			tabPage2.Text = "KPI'S Diários";
 			// 
@@ -150,7 +487,7 @@
 			panel3.Dock = DockStyle.Left;
 			panel3.Location = new Point(3, 83);
 			panel3.Name = "panel3";
-			panel3.Size = new Size(230, 417);
+			panel3.Size = new Size(230, 445);
 			panel3.TabIndex = 7;
 			// 
 			// button4
@@ -181,7 +518,7 @@
 			deleteButton.Name = "deleteButton";
 			deleteButton.Size = new Size(160, 121);
 			deleteButton.TabIndex = 13;
-			deleteButton.Text = "Eliminar Mês";
+			deleteButton.Text = "Eliminar Mês selecionado";
 			deleteButton.UseVisualStyleBackColor = false;
 			deleteButton.Click += button4_Click;
 			deleteButton.Enter += GerarPdf_MouseEnter;
@@ -266,7 +603,7 @@
 			tabPage1.Location = new Point(4, 24);
 			tabPage1.Name = "tabPage1";
 			tabPage1.Padding = new Padding(3);
-			tabPage1.Size = new Size(905, 503);
+			tabPage1.Size = new Size(905, 531);
 			tabPage1.TabIndex = 0;
 			tabPage1.Text = "Mapa KLM";
 			// 
@@ -278,7 +615,7 @@
 			panel2.Dock = DockStyle.Left;
 			panel2.Location = new Point(3, 83);
 			panel2.Name = "panel2";
-			panel2.Size = new Size(201, 417);
+			panel2.Size = new Size(201, 445);
 			panel2.TabIndex = 7;
 			// 
 			// resetData
@@ -388,132 +725,53 @@
 			tabControl1.Controls.Add(tabPage1);
 			tabControl1.Controls.Add(tabPage2);
 			tabControl1.Controls.Add(tabPage5);
+			tabControl1.Controls.Add(tabPage3);
 			tabControl1.Dock = DockStyle.Fill;
 			tabControl1.Location = new Point(0, 0);
 			tabControl1.Name = "tabControl1";
 			tabControl1.SelectedIndex = 0;
-			tabControl1.Size = new Size(913, 531);
+			tabControl1.Size = new Size(913, 559);
 			tabControl1.TabIndex = 5;
 			// 
-			// tabPage5
+			// statusStrip1
 			// 
-			tabPage5.BackColor = Color.Gainsboro;
-			tabPage5.BackgroundImageLayout = ImageLayout.None;
-			tabPage5.Controls.Add(label6);
-			tabPage5.Controls.Add(progressBar4);
-			tabPage5.Controls.Add(panel5);
-			tabPage5.Controls.Add(button5);
-			tabPage5.Controls.Add(panel7);
-			tabPage5.Font = new Font("Segoe UI", 25F);
-			tabPage5.Location = new Point(4, 24);
-			tabPage5.Name = "tabPage5";
-			tabPage5.Padding = new Padding(3);
-			tabPage5.Size = new Size(905, 503);
-			tabPage5.TabIndex = 4;
-			tabPage5.Text = "Stock Parado";
+			statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripProgressBar1 });
+			statusStrip1.Location = new Point(0, 537);
+			statusStrip1.Name = "statusStrip1";
+			statusStrip1.Size = new Size(913, 22);
+			statusStrip1.TabIndex = 6;
+			statusStrip1.Text = "statusStrip1";
 			// 
-			// label6
+			// toolStripProgressBar1
 			// 
-			label6.AutoSize = true;
-			label6.Font = new Font("Segoe UI", 23F);
-			label6.Location = new Point(499, 330);
-			label6.Name = "label6";
-			label6.Size = new Size(0, 42);
-			label6.TabIndex = 17;
-			label6.TextAlign = ContentAlignment.MiddleCenter;
-			label6.Visible = false;
-			// 
-			// progressBar4
-			// 
-			progressBar4.Location = new Point(406, 434);
-			progressBar4.Name = "progressBar4";
-			progressBar4.Size = new Size(328, 59);
-			progressBar4.TabIndex = 19;
-			progressBar4.Visible = false;
-			// 
-			// panel5
-			// 
-			panel5.BorderStyle = BorderStyle.FixedSingle;
-			panel5.Controls.Add(button1);
-			panel5.Dock = DockStyle.Left;
-			panel5.Location = new Point(3, 83);
-			panel5.Name = "panel5";
-			panel5.Size = new Size(230, 417);
-			panel5.TabIndex = 16;
-			// 
-			// button1
-			// 
-			button1.BackColor = Color.LightGray;
-			button1.FlatAppearance.BorderSize = 0;
-			button1.FlatAppearance.MouseOverBackColor = Color.Black;
-			button1.FlatStyle = FlatStyle.Flat;
-			button1.Font = new Font("Segoe UI", 13F);
-			button1.Location = new Point(30, 23);
-			button1.Name = "button1";
-			button1.Size = new Size(160, 150);
-			button1.TabIndex = 14;
-			button1.Text = "Atualizar Dados da API";
-			button1.UseVisualStyleBackColor = false;
-			button1.Click += resetData_Click;
-			button1.MouseEnter += GerarPdf_MouseEnter;
-			button1.MouseLeave += GerarPdf_MouseLeave;
-			// 
-			// button5
-			// 
-			button5.BackColor = Color.Transparent;
-			button5.Font = new Font("Segoe UI", 15F);
-			button5.Location = new Point(406, 163);
-			button5.Name = "button5";
-			button5.Size = new Size(328, 53);
-			button5.TabIndex = 15;
-			button5.Text = "Importar Excel";
-			button5.UseVisualStyleBackColor = false;
-			button5.Click += button5_Click;
-			// 
-			// panel7
-			// 
-			panel7.BackColor = SystemColors.HotTrack;
-			panel7.Controls.Add(label3);
-			panel7.Controls.Add(pictureBox4);
-			panel7.Dock = DockStyle.Top;
-			panel7.Location = new Point(3, 3);
-			panel7.Name = "panel7";
-			panel7.Size = new Size(899, 80);
-			panel7.TabIndex = 6;
-			// 
-			// label3
-			// 
-			label3.AutoSize = true;
-			label3.BackColor = Color.FromArgb(7, 43, 101);
-			label3.Font = new Font("Segoe UI", 24.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-			label3.ForeColor = Color.Transparent;
-			label3.Location = new Point(385, 15);
-			label3.Name = "label3";
-			label3.Size = new Size(450, 45);
-			label3.TabIndex = 7;
-			label3.Text = "ExpressGlass - Stock Parado";
-			// 
-			// pictureBox4
-			// 
-			pictureBox4.BackColor = Color.FromArgb(7, 43, 101);
-			pictureBox4.Dock = DockStyle.Fill;
-			pictureBox4.Image = (Image)resources.GetObject("pictureBox4.Image");
-			pictureBox4.Location = new Point(0, 0);
-			pictureBox4.Name = "pictureBox4";
-			pictureBox4.Size = new Size(899, 80);
-			pictureBox4.TabIndex = 0;
-			pictureBox4.TabStop = false;
+			toolStripProgressBar1.Name = "toolStripProgressBar1";
+			toolStripProgressBar1.Size = new Size(100, 16);
+			toolStripProgressBar1.Visible = false;
 			// 
 			// Form1
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(913, 531);
+			ClientSize = new Size(913, 559);
+			Controls.Add(statusStrip1);
 			Controls.Add(tabControl1);
 			Icon = (Icon)resources.GetObject("$this.Icon");
 			Name = "Form1";
 			Text = "PDF Generator";
 			((System.ComponentModel.ISupportInitialize)bindingSource1).EndInit();
+			tabPage3.ResumeLayout(false);
+			panel9.ResumeLayout(false);
+			panel9.PerformLayout();
+			panel6.ResumeLayout(false);
+			panel8.ResumeLayout(false);
+			panel8.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
+			tabPage5.ResumeLayout(false);
+			tabPage5.PerformLayout();
+			panel5.ResumeLayout(false);
+			panel7.ResumeLayout(false);
+			panel7.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)pictureBox4).EndInit();
 			tabPage2.ResumeLayout(false);
 			tabPage2.PerformLayout();
 			panel3.ResumeLayout(false);
@@ -527,13 +785,10 @@
 			panel1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
 			tabControl1.ResumeLayout(false);
-			tabPage5.ResumeLayout(false);
-			tabPage5.PerformLayout();
-			panel5.ResumeLayout(false);
-			panel7.ResumeLayout(false);
-			panel7.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)pictureBox4).EndInit();
+			statusStrip1.ResumeLayout(false);
+			statusStrip1.PerformLayout();
 			ResumeLayout(false);
+			PerformLayout();
 		}
 
 		#endregion
@@ -541,7 +796,35 @@
 		private Button buttonFilter;
 		private CheckedListBox listBoxStores;
 		private DataGridView dataGridView1;
+		private System.ComponentModel.BackgroundWorker backgroundWorker1;
+		private GroupBox groupBox6;
+		private PictureBox pictureBox8;
+		private GroupBox groupBox5;
+		private PictureBox pictureBox7;
+		private GroupBox groupBox4;
+		private PictureBox pictureBox6;
+		private GroupBox groupBox3;
+		private PictureBox pictureBox5;
+		private TabPage tabPage3;
+		private Label label7;
+		private ProgressBar progressBar5;
+		private Panel panel6;
+		private Button button2;
+		private Button button6;
+		private Panel panel8;
+		private Label label8;
+		private PictureBox pictureBox3;
+		private TabPage tabPage5;
+		private Label label6;
+		private ProgressBar progressBar4;
+		private Panel panel5;
+		private Button button1;
+		private Button button5;
+		private Panel panel7;
+		private Label label3;
+		private PictureBox pictureBox4;
 		private TabPage tabPage2;
+		private Label label5;
 		private Label label4;
 		private Label statusLabel2;
 		private ProgressBar progressBar3;
@@ -565,24 +848,15 @@
 		private Label statusLabel;
 		private ProgressBar progressBar1;
 		private TabControl tabControl1;
-		private TabPage tabPage5;
-		private Panel panel7;
-		private Label label3;
-		private PictureBox pictureBox4;
-		private System.ComponentModel.BackgroundWorker backgroundWorker1;
-		private GroupBox groupBox6;
-		private PictureBox pictureBox8;
-		private GroupBox groupBox5;
-		private PictureBox pictureBox7;
-		private GroupBox groupBox4;
-		private PictureBox pictureBox6;
-		private GroupBox groupBox3;
-		private PictureBox pictureBox5;
-		private Label label6;
-		private ProgressBar progressBar4;
-		private Panel panel5;
-		private Button button1;
-		private Button button5;
-		private Label label5;
+		private ComboBox monthConsola;
+		private TextBox textBox1;
+		private Label label11;
+		private Label label10;
+		private Label label9;
+		private Button button7;
+		private Button button8;
+		private Panel panel9;
+		private StatusStrip statusStrip1;
+		private ToolStripProgressBar toolStripProgressBar1;
 	}
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using iTextSharp.text.pdf;
 using iTextSharp.text;
 using Gerador_ecxel;
+using static iTextSharp.text.pdf.codec.TiffWriter;
 
 namespace Gerador_PDF.Services
 {
@@ -18,9 +19,28 @@ namespace Gerador_PDF.Services
 		private string _status;
 		private string _matricula;
 		private Form1 _form1;
+		BaseFont bfCalibri;
+		BaseFont bfcalibriBold ;
+		BaseFont bfcalibriBIt;
+		BaseFont bfVerdana;
 
+		string sourceDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Source");
+
+		void generateFont()
+		{
+			bfCalibri = BaseFont.CreateFont(Path.Combine(sourceDir, "calibri-regular.ttf"), BaseFont.WINANSI, BaseFont.EMBEDDED);
+			bfcalibriBold = BaseFont.CreateFont(Path.Combine(sourceDir, "calibri-bold.ttf"), BaseFont.WINANSI, BaseFont.EMBEDDED);
+			bfcalibriBIt = BaseFont.CreateFont(Path.Combine(sourceDir, "calibri-bold-italic.ttf"), BaseFont.WINANSI, BaseFont.EMBEDDED);
+			bfVerdana = BaseFont.CreateFont(Path.Combine(sourceDir, "verdana.ttf"), BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+		}
+		public pdfGenerator(Form1 form)
+		{
+			generateFont();
+			_form1 = form;
+		}
 		public pdfGenerator(List<string[]> entries, Form1 form, string folderPath)
 		{
+			generateFont();
 			_form1 = form;
 			string previousName = "";
 			int pdfCount = 0;
@@ -49,6 +69,98 @@ namespace Gerador_PDF.Services
 			_form1.UpdateStatusPdf("");
 			MessageBox.Show("PDF gerado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
+		public void GenerateConsola()
+		{
+			generateFont();
+			string folderPath = Path.Combine(Application.StartupPath, "PDFs-consola");
+			if (!Directory.Exists(folderPath))
+				Directory.CreateDirectory(folderPath);
+			string filePath = Path.Combine(folderPath, $"Consola" + "_" + $"{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf");
+			Document doc = new Document(PageSize.A4);
+			if (doc == null)
+				throw new Exception("O documento não foi inicializado corretamente.");
+			PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
+			doc.Open();
+
+			var titleFont = FontFactory.GetFont("Arial", 16, iTextSharp.text.Font.BOLD);
+			var subFont = FontFactory.GetFont("Arial", 12, iTextSharp.text.Font.BOLD);
+			var normalFont = FontFactory.GetFont("Arial", 12, iTextSharp.text.Font.NORMAL);
+
+			string logoPath = Path.Combine(sourceDir, "logo.jpeg");
+			if (File.Exists(logoPath))
+			{
+				iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance(logoPath);
+				logo.ScaleAbsolute(160, 35);
+				logo.Alignment = Element.ALIGN_LEFT;
+				doc.Add(logo);
+			}
+
+			doc.Add(new Paragraph("\n"));
+
+			// Cabeçalho - Loja / Mês
+			PdfPTable header = new PdfPTable(2);
+			header.WidthPercentage = 100;
+			header.SetWidths(new float[] { 1, 1 });
+
+			AddHeaderCell(header, "Loja:", normalFont);
+			AddHeaderCell(header, "Mês:", normalFont);
+			doc.Add(header);
+
+			doc.Add(new Paragraph("\n"));
+
+			// Seções
+			AddSection(doc, sourceDir, "Vidros Substituídos:", "icone_vidro_substituido.png", subFont);
+			AddSection(doc, sourceDir, "Vidros Reparados:", "icone_vidro_reparado.png", subFont);
+			AddSection(doc, sourceDir, "Vendas Complementares:", "icone_carrinho.png", subFont);
+			AddSection(doc, sourceDir, "Eficiência (FTE):", "icone_eficiencia.png", subFont);
+			AddSection(doc, sourceDir, "Venda de Escovas:", "icone_escovas.png", subFont);
+
+			doc.Close();
+		}
+
+		private void AddHeaderCell(PdfPTable table, string label, iTextSharp.text.Font font)
+		{
+			PdfPCell cell = new PdfPCell(new Phrase(label + " ____________________", font));
+			cell.Border = iTextSharp.text.Rectangle.NO_BORDER;
+			cell.PaddingBottom = 10f;
+			table.AddCell(cell);
+		}
+
+		private void AddSection(Document doc, string sourceDir, string label, string iconFile, iTextSharp.text.Font lineFont)
+		{
+			PdfPTable table = new PdfPTable(2);
+			table.WidthPercentage = 100;
+			table.SetWidths(new float[] { 1, 9 });
+
+			string iconPath = Path.Combine(sourceDir, iconFile);
+			iTextSharp.text.Image icon = File.Exists(iconPath) ? iTextSharp.text.Image.GetInstance(iconPath) : null;
+			if (icon != null)
+			{
+				icon.ScaleAbsolute(25, 25);
+				PdfPCell imgCell = new PdfPCell(icon);
+				imgCell.Border = iTextSharp.text.Rectangle.NO_BORDER;
+				imgCell.VerticalAlignment = Element.ALIGN_TOP;
+				table.AddCell(imgCell);
+			}
+			else
+			{
+				table.AddCell("");
+			}
+
+			PdfPCell textCell = new PdfPCell();
+			textCell.Border = iTextSharp.text.Rectangle.NO_BORDER;
+			Paragraph p = new Paragraph(label + "\n", FontFactory.GetFont("Helvetica", 11, iTextSharp.text.Font.BOLD));
+			for (int i = 0; i < 3; i++)
+			{
+				p.Add(new Chunk("__________________________________________________________\n", lineFont));
+			}
+			textCell.AddElement(p);
+			table.AddCell(textCell);
+
+			doc.Add(table);
+			doc.Add(new Paragraph("\n"));
+		}
+
 		public void GeneratePdf(List<string[]> entries, string folderPath)
 		{
 			var baseColor = new BaseColor(75, 85, 87, 255);
@@ -65,19 +177,12 @@ namespace Gerador_PDF.Services
 			PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
 
 			doc.Open();
-			string sourceDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Source");
-
-			BaseFont bfCalibri = BaseFont.CreateFont(Path.Combine(sourceDir, "calibri-regular.ttf"), BaseFont.WINANSI, BaseFont.EMBEDDED);
-			BaseFont bfcalibriBold = BaseFont.CreateFont(Path.Combine(sourceDir, "calibri-bold.ttf"), BaseFont.WINANSI, BaseFont.EMBEDDED);
-			BaseFont bfcalibriBIt = BaseFont.CreateFont(Path.Combine(sourceDir, "calibri-bold-italic.ttf"), BaseFont.WINANSI, BaseFont.EMBEDDED);
-			BaseFont bfVerdana = BaseFont.CreateFont(Path.Combine(sourceDir, "verdana.ttf"), BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
 
 			iTextSharp.text.Font titleFont = new iTextSharp.text.Font(bfcalibriBold, 13, iTextSharp.text.Font.BOLD);
 			iTextSharp.text.Font subTitleFont = new iTextSharp.text.Font(bfVerdana, 12, iTextSharp.text.Font.BOLD, baseColor);
 			iTextSharp.text.Font tableHeaderFont = new iTextSharp.text.Font(bfcalibriBIt, 11, iTextSharp.text.Font.BOLD, baseColor);
 			iTextSharp.text.Font tableFont = new iTextSharp.text.Font(bfCalibri, 8, iTextSharp.text.Font.NORMAL, baseColor);
 			iTextSharp.text.Font sectionFont = new iTextSharp.text.Font(bfVerdana, 10, iTextSharp.text.Font.NORMAL, baseColor);
-
 			string imagePath = Path.Combine(sourceDir, "logo.jpeg");
 			if (File.Exists(imagePath))
 			{

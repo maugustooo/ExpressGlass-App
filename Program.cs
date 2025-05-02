@@ -32,7 +32,8 @@ namespace Gerador_ecxel
 				var config = NotionConfigHelper.GetConfig();
 				Form1 form = new Form1(config);
 				Application.Run(form);
-
+				consola c = new consola(config, form);
+				c.createDataBase();
 				if (config == null)
 				{
 					MessageBox.Show("Erro: As API Keys não foram definidas.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);

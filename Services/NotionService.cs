@@ -102,31 +102,42 @@ namespace Gerador_PDF.Services
 			}
 		}
 
-		private void SalvarLojaNoBanco(string nome)
+		private void SaveDataInDb(string nomeLoja, string objDia, string faturados, string taxaReparacao, string vaps, string fte, string qtdEscovas)
 		{
 			using (var conn = new SqliteConnection("Data Source=lojas.db"))
 			{
 				conn.Open();
 
-				string sql = "INSERT OR IGNORE INTO Lojas (Nome) VALUES (@nome)"; // UUID vazio por enquanto
+				string sql = @"
+			INSERT INTO Data (NomeLoja, ObjDia, Faturados, TaxaReparacao, VAPS, FTE, QtdEscovas)
+			VALUES (@nomeLoja, @objDia, @faturados, @taxaReparacao, @vaps, @fte, @qtdEscovas);";
+
 				using (var cmd = new SqliteCommand(sql, conn))
 				{
-					cmd.Parameters.AddWithValue("@nome", nome);
+					cmd.Parameters.AddWithValue("@nomeLoja", nomeLoja);
+					cmd.Parameters.AddWithValue("@objDia", objDia);
+					cmd.Parameters.AddWithValue("@faturados", faturados);
+					cmd.Parameters.AddWithValue("@taxaReparacao", taxaReparacao);
+					cmd.Parameters.AddWithValue("@vaps", vaps);
+					cmd.Parameters.AddWithValue("@fte", fte);
+					cmd.Parameters.AddWithValue("@qtdEscovas", qtdEscovas);
+
 					cmd.ExecuteNonQuery();
 				}
 			}
 		}
 
 
+
 		public async Task CarregarLojasParaBaseLocalAsync()
 		{
-			var url = $"https://api.notion.com/v1/databases/{_dataBaseIdLoja}/query";
-
+			var url = $"https://api.notion.com/v1/databases/{_dataBaseIdKPI}/query";
+			var requestBody = new { };
 			var request = new HttpRequestMessage(HttpMethod.Post, url)
 			{
-				Content = new StringContent("{}", Encoding.UTF8, "application/json")
+				Content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json")
 			};
-
+			_client.Timeout = TimeSpan.FromSeconds(10);
 			var response = await _client.SendAsync(request);
 			var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -148,12 +159,18 @@ namespace Gerador_PDF.Services
 
 			foreach (var item in results)
 			{
-				var nome = item["properties"]?["Loja"]?["title"]?.FirstOrDefault()?["text"]?["content"]?.ToString();
+				var props = item["properties"];
+				if (props == null) continue;
 
-				if (!string.IsNullOrWhiteSpace(nome))
-				{
-					SalvarLojaNoBanco(nome); // Apenas nome, sem UUID
-				}
+				string loja = props["Loja"]?["title"]?.FirstOrDefault()?["text"]?["content"]?.ToString() ?? "";
+				string objDia = props["Obj Dia"]?["rich_text"]?.FirstOrDefault()?["text"]?["content"]?.ToString() ?? "";
+				string faturados = props["Faturados"]?["number"]?.ToString() ?? "";
+				string taxaReparacao = props["Taxa Reparacao"]?["rich_text"]?.FirstOrDefault()?["text"]?["content"]?.ToString() ?? "";
+				string vaps = props["VAPS"]?["number"]?.ToString() ?? "";
+				string fte = props["FTE"]?["number"]?.ToString() ?? "";
+				string qtdEscovas = props["Qtd Escovas"]?["number"]?.ToString() ?? "";
+
+				SaveDataInDb(loja, objDia, faturados, taxaReparacao, vaps, fte, qtdEscovas);
 			}
 		}
 

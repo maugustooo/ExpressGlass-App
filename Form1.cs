@@ -1,3 +1,4 @@
+using System;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -8,20 +9,58 @@ using Gerador_PDF.Services;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.Data.Sqlite;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace Gerador_ecxel
 {
 
 	public partial class Form1 : Form
 	{
+		private Config _config;
+		private consola _consola;
+		public class DadosPainel
+		{
+			public string _title { get; }
+			public string _data1 { get; }
+			public string _data2 { get; }
+
+			public DadosPainel(string title, string data1, string data2)
+			{
+				_title = title;
+				_data1 = data1;
+				_data2 = data2;
+			}
+		}
 		private readonly NotionService notionService;
-		private string _folderPath = Path.Combine(Application.StartupPath, "PDFs");
+		private string _folderPath = Path.Combine(Application.StartupPath, "PDFs-KLM");
+		private List<DadosPainel> dadosPainel = new List<DadosPainel>();
+
 		public Form1(Config config)
 		{
+			_config = config;
 			InitializeComponent();
 			//consola c = new consola(config, this);
 			//c.createDataBase();
+			dadosPainel.Add(new DadosPainel("Serviços", "obj: ", "Faturados: "));
+			dadosPainel.Add(new DadosPainel("Vidros reparados", "obj: 22%", "Taxa de reparação: "));
+			dadosPainel.Add(new DadosPainel("Vendas Complementares", "Vendas Complementares:", ""));
+			dadosPainel.Add(new DadosPainel("Efeciência(FTE)", "obj: 1.8", "FTE: "));
+			dadosPainel.Add(new DadosPainel("Venda de escovas", "QTD Escovas: ", ""));
+
 			notionService = new NotionService(config.NotionApiKey, config.NotionDatabaseId, config.NotionDatabaseIdKPIs, config.NotionDatabaseIdLojas, config.NotionDatabaseIdStockParado);
+			this.Shown += Form1_Shown;
+		}
+		private async void Form1_Shown(object sender, EventArgs e)
+		{
+			_consola = new consola(_config, this);
+			try
+			{
+				_consola.createDataBase();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Erro ao criar a base de dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 
 		private async void GerarPdf_Click(object sender, EventArgs e)
@@ -56,6 +95,18 @@ namespace Gerador_ecxel
 				progressBar1.Visible = false;
 				statusLabel.Visible = false;
 				MessageBox.Show($"Erro ao gerar PDF: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+		public void UpdateStatusBar(int what)
+		{
+			if (what == 1)
+			{
+				toolStripProgressBar1.Visible = true;
+				toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
+			}
+			else
+			{
+				toolStripProgressBar1.Visible = false;
 			}
 		}
 		public void UpdateStatusPdf(string statusText)
@@ -206,6 +257,29 @@ namespace Gerador_ecxel
 			{
 				MessageBox.Show("Nenhum ficheiro selecionado", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
+		}
+
+		private void button6_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				pdfGenerator pdfGenerator = new pdfGenerator(this);
+				pdfGenerator.GenerateConsola();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Erro ao gerar PDF: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void button8_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void button7_Click(object sender, EventArgs e)
+		{
+
 		}
 	}
 }
