@@ -16,6 +16,7 @@ namespace Gerador_ecxel
 
 	public partial class Form1 : Form
 	{
+		private int index = 0;
 		private Config _config;
 		private consola _consola;
 		public class DadosPainel
@@ -41,11 +42,11 @@ namespace Gerador_ecxel
 			InitializeComponent();
 			//consola c = new consola(config, this);
 			//c.createDataBase();
-			dadosPainel.Add(new DadosPainel("Serviços", "obj: ", "Faturados: "));
-			dadosPainel.Add(new DadosPainel("Vidros reparados", "obj: 22%", "Taxa de reparação: "));
-			dadosPainel.Add(new DadosPainel("Vendas Complementares", "Vendas Complementares:", ""));
-			dadosPainel.Add(new DadosPainel("Efeciência(FTE)", "obj: 1.8", "FTE: "));
-			dadosPainel.Add(new DadosPainel("Venda de escovas", "QTD Escovas: ", ""));
+			dadosPainel.Add(new DadosPainel("Serviços", "obj", "Faturados"));
+			dadosPainel.Add(new DadosPainel("Vidros reparados", "obj: 22%", "TX REP %"));
+			dadosPainel.Add(new DadosPainel("Vendas Complementares", "VAPS", ""));
+			dadosPainel.Add(new DadosPainel("Efeciência(FTE)", "obj: 1.8", "FTE"));
+			dadosPainel.Add(new DadosPainel("Venda de escovas", "QTD Escovas", ""));
 
 			notionService = new NotionService(config.NotionApiKey, config.NotionDatabaseId, config.NotionDatabaseIdKPIs, config.NotionDatabaseIdLojas, config.NotionDatabaseIdStockParado);
 			this.Shown += Form1_Shown;
@@ -56,12 +57,40 @@ namespace Gerador_ecxel
 			try
 			{
 				_consola.createDataBase();
+				CarregarComboBox();
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show($"Erro ao criar a base de dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
+		private void CarregarComboBox()
+		{
+			string caminhoBD = "Data Source=lojas.db";
+			string query = "SELECT NomeLoja FROM Data";
+
+			using (SqliteConnection conn = new SqliteConnection(caminhoBD))
+			{
+				try
+				{
+					conn.Open();
+					SqliteCommand cmd = new SqliteCommand(query, conn);
+					SqliteDataReader reader = cmd.ExecuteReader();
+
+					while (reader.Read())
+					{
+						comboBox2.Items.Add(reader["NomeLoja"].ToString());
+					}
+
+					conn.Close();
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show("Erro: " + ex.Message);
+				}
+			}
+		}
+
 
 		private async void GerarPdf_Click(object sender, EventArgs e)
 		{
@@ -99,6 +128,8 @@ namespace Gerador_ecxel
 		}
 		public void UpdateStatusBar(int what)
 		{
+			if (this.IsDisposed || !this.IsHandleCreated)
+				return;
 			if (what == 1)
 			{
 				toolStripProgressBar1.Visible = true;
@@ -199,24 +230,47 @@ namespace Gerador_ecxel
 				MessageBox.Show("Selecione um mês para eliminar.");
 			}
 		}
-		public void CarregarLojasNoComboBox()
-		{
-			//using (var conn = new SqliteConnection("Data Source=lojas.db"))
-			//{
-			//	conn.Open();
-			//	string sql = "SELECT Nome FROM Lojas";
 
-			//	using (var cmd = new SqliteCommand(sql, conn))
-			//	using (var reader = cmd.ExecuteReader())
-			//	{
-			//		comboBoxLojas.Items.Clear(); // Limpa antes de carregar
-			//		while (reader.Read())
-			//		{
-			//			string nome = reader.GetString(0);
-			//			comboBoxLojas.Items.Add(nome);
-			//		}
-			//	}
-			//}
+		private List<(string, string)> getDataFromDb(string store, string column1, string column2)
+		{
+			var resultados = new List<(string, string)>();
+			string sql = "";
+			string EscapeColumn(string col) =>
+				col.Any(c => !char.IsLetterOrDigit(c) && c != '_') ? $"\"{col}\"" : col;
+			using (var conn = new SqliteConnection("Data Source=lojas.db"))
+			{
+				conn.Open();
+
+				if (string.IsNullOrEmpty(store))
+				{
+					MessageBox.Show("Selecione uma loja.");
+					return resultados;
+				}
+
+				string rawCol1 = column1;
+				string rawCol2 = column2;
+				string col1 = EscapeColumn(rawCol1);
+				string col2 = EscapeColumn(rawCol2);
+				if (rawCol1.Contains(':'))
+					sql = $"SELECT {col2} FROM Data WHERE NomeLoja='{store}'";
+				else if (string.IsNullOrEmpty(col2))
+					sql = $"SELECT {col1} FROM Data WHERE NomeLoja='{store}'";
+				else
+					sql = $"SELECT {col1}, {col2} FROM Data WHERE NomeLoja='{store}'";
+
+				using (var cmd = new SqliteCommand(sql, conn))
+				using (var reader = cmd.ExecuteReader())
+				{
+					while (reader.Read())
+					{
+						string valor1 = !rawCol1.Contains(':') ? reader[rawCol1].ToString() : "";
+						string valor2 = !string.IsNullOrEmpty(rawCol2) ? reader[rawCol2].ToString() : "";
+
+						resultados.Add((valor1, valor2));
+					}
+				}
+			}
+			return resultados;
 		}
 		private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
 		{
@@ -274,12 +328,36 @@ namespace Gerador_ecxel
 
 		private void button8_Click(object sender, EventArgs e)
 		{
-
+			index --;
+			if (index <= 0)
+				index = dadosPainel.Count - 1;
+			if (comboBox2.SelectedItem == null)
+			{
+				MessageBox.Show("Selecione uma loja.");
+				return;
+			}
+			var data = getDataFromDb(comboBox2.SelectedItem.ToString(), dadosPainel[index]._data1, dadosPainel[index]._data2);
+			labelTitle.Text = dadosPainel[index]._title;
+			labelData1.Text = dadosPainel[index]._data1 + ": " + data[0];
+			labelData2.Text = dadosPainel[index]._data2 + ": " + data[1];
 		}
 
 		private void button7_Click(object sender, EventArgs e)
 		{
+			index++;
+			if (index >= dadosPainel.Count - 1)
+				index = 0;
+			if (comboBox2.SelectedItem == null)
+			{
+				MessageBox.Show("Selecione uma loja.");
+				return;
+			}
+			var data = getDataFromDb(comboBox2.SelectedItem.ToString(), dadosPainel[index]._data1, dadosPainel[index]._data2);
+			labelTitle.Text = dadosPainel[index]._title;
 
+			Console.WriteLine("Data0: " + (data.Count > 0 ? data[0] : "") + " Data1: " + (data.Count > 1 ? data[1] : ""));
+			labelData1.Text = dadosPainel[index]._data1 + ": " + (data.Count > 0 ? data[0] : "");
+			labelData2.Text = dadosPainel[index]._data2 + ": " + (data.Count > 1 ? data[1] : "");
 		}
 	}
 }

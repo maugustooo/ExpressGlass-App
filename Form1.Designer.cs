@@ -33,14 +33,15 @@
 			bindingSource1 = new BindingSource(components);
 			backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
 			tabPage3 = new TabPage();
+			comboBox2 = new ComboBox();
 			panel9 = new Panel();
-			label9 = new Label();
+			labelTitle = new Label();
 			button8 = new Button();
 			label7 = new Label();
 			button7 = new Button();
-			label10 = new Label();
+			labelData1 = new Label();
 			textBox1 = new TextBox();
-			label11 = new Label();
+			labelData2 = new Label();
 			monthConsola = new ComboBox();
 			progressBar5 = new ProgressBar();
 			panel6 = new Panel();
@@ -111,6 +112,7 @@
 			// 
 			tabPage3.BackColor = Color.Gainsboro;
 			tabPage3.BackgroundImageLayout = ImageLayout.None;
+			tabPage3.Controls.Add(comboBox2);
 			tabPage3.Controls.Add(panel9);
 			tabPage3.Controls.Add(monthConsola);
 			tabPage3.Controls.Add(progressBar5);
@@ -125,34 +127,52 @@
 			tabPage3.TabIndex = 6;
 			tabPage3.Text = "Consola";
 			// 
+			// comboBox2
+			// 
+			comboBox2.AutoCompleteMode = AutoCompleteMode.Suggest;
+			comboBox2.AutoCompleteSource = AutoCompleteSource.ListItems;
+			comboBox2.Cursor = Cursors.Hand;
+			comboBox2.DropDownHeight = 500;
+			comboBox2.Font = new Font("Segoe UI", 12F);
+			comboBox2.FormattingEnabled = true;
+			comboBox2.IntegralHeight = false;
+			comboBox2.ItemHeight = 21;
+			comboBox2.Location = new Point(286, 122);
+			comboBox2.MaxDropDownItems = 12;
+			comboBox2.MaxLength = 60;
+			comboBox2.Name = "comboBox2";
+			comboBox2.Size = new Size(173, 29);
+			comboBox2.TabIndex = 28;
+			// 
 			// panel9
 			// 
-			panel9.Controls.Add(label9);
+			panel9.Controls.Add(labelTitle);
 			panel9.Controls.Add(button8);
 			panel9.Controls.Add(label7);
 			panel9.Controls.Add(button7);
-			panel9.Controls.Add(label10);
+			panel9.Controls.Add(labelData1);
 			panel9.Controls.Add(textBox1);
-			panel9.Controls.Add(label11);
-			panel9.Location = new Point(269, 174);
+			panel9.Controls.Add(labelData2);
+			panel9.Location = new Point(286, 157);
 			panel9.Name = "panel9";
-			panel9.Size = new Size(581, 181);
+			panel9.Size = new Size(529, 229);
 			panel9.TabIndex = 27;
 			// 
-			// label9
+			// labelTitle
 			// 
-			label9.AutoSize = true;
-			label9.Location = new Point(36, 16);
-			label9.Name = "label9";
-			label9.Size = new Size(142, 46);
-			label9.TabIndex = 21;
-			label9.Text = "Serviços";
+			labelTitle.AutoSize = true;
+			labelTitle.Font = new Font("Segoe UI", 22F);
+			labelTitle.Location = new Point(5, 17);
+			labelTitle.Name = "labelTitle";
+			labelTitle.Size = new Size(126, 41);
+			labelTitle.TabIndex = 21;
+			labelTitle.Text = "Serviços";
 			// 
 			// button8
 			// 
 			button8.FlatAppearance.BorderSize = 0;
 			button8.Font = new Font("Segoe UI", 30F);
-			button8.Location = new Point(36, 129);
+			button8.Location = new Point(5, 173);
 			button8.Name = "button8";
 			button8.Size = new Size(65, 49);
 			button8.TabIndex = 26;
@@ -165,7 +185,7 @@
 			// 
 			label7.AutoSize = true;
 			label7.Font = new Font("Segoe UI", 23F);
-			label7.Location = new Point(242, 156);
+			label7.Location = new Point(205, 200);
 			label7.Name = "label7";
 			label7.Size = new Size(0, 42);
 			label7.TabIndex = 17;
@@ -176,7 +196,7 @@
 			// 
 			button7.FlatAppearance.BorderSize = 0;
 			button7.Font = new Font("Segoe UI", 30F);
-			button7.Location = new Point(113, 129);
+			button7.Location = new Point(76, 173);
 			button7.Name = "button7";
 			button7.Size = new Size(65, 49);
 			button7.TabIndex = 25;
@@ -185,33 +205,34 @@
 			button7.UseVisualStyleBackColor = true;
 			button7.Click += button7_Click;
 			// 
-			// label10
+			// labelData1
 			// 
-			label10.AutoSize = true;
-			label10.Font = new Font("Segoe UI", 18F);
-			label10.Location = new Point(36, 62);
-			label10.Name = "label10";
-			label10.Size = new Size(78, 32);
-			label10.TabIndex = 22;
-			label10.Text = "data1:";
+			labelData1.AutoSize = true;
+			labelData1.Font = new Font("Segoe UI", 15F);
+			labelData1.Location = new Point(5, 58);
+			labelData1.Name = "labelData1";
+			labelData1.Size = new Size(45, 28);
+			labelData1.TabIndex = 22;
+			labelData1.Text = "obj:";
 			// 
 			// textBox1
 			// 
-			textBox1.Location = new Point(184, 33);
+			textBox1.Font = new Font("Segoe UI", 12F);
+			textBox1.Location = new Point(147, 69);
 			textBox1.Multiline = true;
 			textBox1.Name = "textBox1";
-			textBox1.Size = new Size(371, 145);
+			textBox1.Size = new Size(371, 153);
 			textBox1.TabIndex = 24;
 			// 
-			// label11
+			// labelData2
 			// 
-			label11.AutoSize = true;
-			label11.Font = new Font("Segoe UI", 18F);
-			label11.Location = new Point(36, 94);
-			label11.Name = "label11";
-			label11.Size = new Size(78, 32);
-			label11.TabIndex = 23;
-			label11.Text = "data2:";
+			labelData2.AutoSize = true;
+			labelData2.Font = new Font("Segoe UI", 15F);
+			labelData2.Location = new Point(5, 86);
+			labelData2.Name = "labelData2";
+			labelData2.Size = new Size(102, 28);
+			labelData2.TabIndex = 23;
+			labelData2.Text = "Faturados:";
 			// 
 			// monthConsola
 			// 
@@ -233,7 +254,7 @@
 			// 
 			// progressBar5
 			// 
-			progressBar5.Location = new Point(406, 434);
+			progressBar5.Location = new Point(406, 451);
 			progressBar5.Name = "progressBar5";
 			progressBar5.Size = new Size(328, 59);
 			progressBar5.TabIndex = 19;
@@ -268,7 +289,7 @@
 			// 
 			button6.BackColor = Color.Transparent;
 			button6.Font = new Font("Segoe UI", 15F);
-			button6.Location = new Point(406, 361);
+			button6.Location = new Point(406, 392);
 			button6.Name = "button6";
 			button6.Size = new Size(328, 53);
 			button6.TabIndex = 15;
@@ -850,13 +871,14 @@
 		private TabControl tabControl1;
 		private ComboBox monthConsola;
 		private TextBox textBox1;
-		private Label label11;
-		private Label label10;
-		private Label label9;
+		private Label labelData2;
+		private Label labelData1;
+		private Label labelTitle;
 		private Button button7;
 		private Button button8;
 		private Panel panel9;
 		private StatusStrip statusStrip1;
 		private ToolStripProgressBar toolStripProgressBar1;
+		private ComboBox comboBox2;
 	}
 }

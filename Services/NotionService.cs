@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System.Net;
 using static Gerador_PDF.Services.readExcel;
 using Microsoft.Data.Sqlite;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Gerador_PDF.Services
 {
@@ -102,24 +103,30 @@ namespace Gerador_PDF.Services
 			}
 		}
 
-		private void SaveDataInDb(string nomeLoja, string objDia, string faturados, string taxaReparacao, string vaps, string fte, string qtdEscovas)
+		public void SaveDataInDb(string nomeLoja, string obj, string faturados, string txRep, string vaps, string fte, string qtdEscovas)
 		{
-			using (var conn = new SqliteConnection("Data Source=lojas.db"))
+			using (var conn = new SqliteConnection("Data Source=meuBanco.db"))
 			{
 				conn.Open();
-
-				string sql = @"
-			INSERT INTO Data (NomeLoja, ObjDia, Faturados, TaxaReparacao, VAPS, FTE, QtdEscovas)
-			VALUES (@nomeLoja, @objDia, @faturados, @taxaReparacao, @vaps, @fte, @qtdEscovas);";
-
-				using (var cmd = new SqliteCommand(sql, conn))
+				using (var cmd = conn.CreateCommand())
 				{
-					cmd.Parameters.AddWithValue("@nomeLoja", nomeLoja);
-					cmd.Parameters.AddWithValue("@objDia", objDia);
-					cmd.Parameters.AddWithValue("@faturados", faturados);
-					cmd.Parameters.AddWithValue("@taxaReparacao", taxaReparacao);
-					cmd.Parameters.AddWithValue("@vaps", vaps);
-					cmd.Parameters.AddWithValue("@fte", fte);
+					cmd.CommandText = @"
+                INSERT INTO Data (NomeLoja, obj, Faturados, ""TX REP %"", VAPS, FTE, ""QTD Escovas"")
+                VALUES (@NomeLoja, @obj, @Faturados, @txRep, @VAPS, @FTE, @qtdEscovas)
+                ON CONFLICT(NomeLoja) DO UPDATE SET
+                    obj = excluded.obj,
+                    Faturados = excluded.Faturados,
+                    ""TX REP %"" = excluded.""TX REP %"",
+                    VAPS = excluded.VAPS,
+                    FTE = excluded.FTE,
+                    ""QTD Escovas"" = excluded.""QTD Escovas"";
+					";
+					cmd.Parameters.AddWithValue("@NomeLoja", nomeLoja);
+					cmd.Parameters.AddWithValue("@obj", obj);
+					cmd.Parameters.AddWithValue("@Faturados", faturados);
+					cmd.Parameters.AddWithValue("@txRep", txRep);
+					cmd.Parameters.AddWithValue("@VAPS", vaps);
+					cmd.Parameters.AddWithValue("@FTE", fte);
 					cmd.Parameters.AddWithValue("@qtdEscovas", qtdEscovas);
 
 					cmd.ExecuteNonQuery();
@@ -128,16 +135,13 @@ namespace Gerador_PDF.Services
 		}
 
 
-
 		public async Task CarregarLojasParaBaseLocalAsync()
 		{
 			var url = $"https://api.notion.com/v1/databases/{_dataBaseIdKPI}/query";
-			var requestBody = new { };
 			var request = new HttpRequestMessage(HttpMethod.Post, url)
 			{
-				Content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json")
+				Content = new StringContent("{}", Encoding.UTF8, "application/json")
 			};
-			_client.Timeout = TimeSpan.FromSeconds(10);
 			var response = await _client.SendAsync(request);
 			var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -156,21 +160,40 @@ namespace Gerador_PDF.Services
 				Console.WriteLine("Nenhuma loja encontrada.");
 				return;
 			}
-
+			string lojaName = "";
 			foreach (var item in results)
 			{
 				var props = item["properties"];
 				if (props == null) continue;
+				
+				var lojaRelations = props["Loja"]?["relation"];
+				if (lojaRelations is JArray lojaArray && lojaArray.Count > 0)
+				{
+					string lojaPageId = lojaArray[0]?["id"]?.ToString();
 
-				string loja = props["Loja"]?["title"]?.FirstOrDefault()?["text"]?["content"]?.ToString() ?? "";
-				string objDia = props["Obj Dia"]?["rich_text"]?.FirstOrDefault()?["text"]?["content"]?.ToString() ?? "";
+					string lojaRequest2 = $"https://api.notion.com/v1/pages/{lojaPageId}";
+					HttpResponseMessage lojaResponse = await _client.GetAsync(lojaRequest2);
+					if (!lojaResponse.IsSuccessStatusCode)
+					{
+						Console.WriteLine($"Erro ao buscar loja: {lojaResponse.StatusCode}");
+						continue;
+					}
+					var lojaContent = await lojaResponse.Content.ReadAsStringAsync();
+					if (lojaResponse.IsSuccessStatusCode)
+					{
+						var lojaJson = JObject.Parse(lojaContent);
+						var lojaProps = lojaJson["properties"];
+						lojaName = lojaProps?["Loja"]?["title"]?.FirstOrDefault()?["text"]?["content"]?.ToString() ?? "";
+					}
+				}
+				string objDia = props["Obj.Dia"]?["number"]?.ToString() ?? "";
 				string faturados = props["Faturados"]?["number"]?.ToString() ?? "";
-				string taxaReparacao = props["Taxa Reparacao"]?["rich_text"]?.FirstOrDefault()?["text"]?["content"]?.ToString() ?? "";
+				string taxaReparacao = props["TX REP %"]?["number"]?.ToString() ?? "";
 				string vaps = props["VAPS"]?["number"]?.ToString() ?? "";
 				string fte = props["FTE"]?["number"]?.ToString() ?? "";
-				string qtdEscovas = props["Qtd Escovas"]?["number"]?.ToString() ?? "";
+				string qtdEscovas = props["QTD Escovas"]?["number"]?.ToString() ?? "";
 
-				SaveDataInDb(loja, objDia, faturados, taxaReparacao, vaps, fte, qtdEscovas);
+				SaveDataInDb(lojaName, objDia, faturados, taxaReparacao, vaps, fte, qtdEscovas);
 			}
 		}
 
