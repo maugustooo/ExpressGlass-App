@@ -21,15 +21,17 @@ namespace Gerador_ecxel
 		private consola _consola;
 		public class DadosPainel
 		{
-			public string _title { get; }
-			public string _data1 { get; }
-			public string _data2 { get; }
+			public string _title;
+			public string _data1;
+			public string _data2;
+			public string text;
 
 			public DadosPainel(string title, string data1, string data2)
 			{
 				_title = title;
 				_data1 = data1;
 				_data2 = data2;
+				text = "";
 			}
 		}
 		private readonly NotionService notionService;
@@ -42,10 +44,10 @@ namespace Gerador_ecxel
 			InitializeComponent();
 			//consola c = new consola(config, this);
 			//c.createDataBase();
-			dadosPainel.Add(new DadosPainel("Serviços", "obj", "Faturados"));
-			dadosPainel.Add(new DadosPainel("Vidros reparados", "obj: 22%", "TX REP %"));
+			dadosPainel.Add(new DadosPainel("Serviços", "Obj", "Faturados"));
+			dadosPainel.Add(new DadosPainel("Vidros reparados", "Obj: 22%", "TX REP %"));
 			dadosPainel.Add(new DadosPainel("Vendas Complementares", "VAPS", ""));
-			dadosPainel.Add(new DadosPainel("Efeciência(FTE)", "obj: 1.8", "FTE"));
+			dadosPainel.Add(new DadosPainel("Efeciência(FTE)", "Obj: 1.8", "FTE"));
 			dadosPainel.Add(new DadosPainel("Venda de escovas", "QTD Escovas", ""));
 
 			notionService = new NotionService(config.NotionApiKey, config.NotionDatabaseId, config.NotionDatabaseIdKPIs, config.NotionDatabaseIdLojas, config.NotionDatabaseIdStockParado);
@@ -272,10 +274,6 @@ namespace Gerador_ecxel
 			}
 			return resultados;
 		}
-		private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
-		{
-
-		}
 
 		private async void button5_Click(object sender, EventArgs e)
 		{
@@ -318,7 +316,7 @@ namespace Gerador_ecxel
 			try
 			{
 				pdfGenerator pdfGenerator = new pdfGenerator(this);
-				pdfGenerator.GenerateConsola();
+				pdfGenerator.GenerateConsola(dadosPainel);
 			}
 			catch (Exception ex)
 			{
@@ -328,18 +326,38 @@ namespace Gerador_ecxel
 
 		private void button8_Click(object sender, EventArgs e)
 		{
-			index --;
-			if (index <= 0)
+			index--;
+			if (index < 0)
 				index = dadosPainel.Count - 1;
 			if (comboBox2.SelectedItem == null)
 			{
 				MessageBox.Show("Selecione uma loja.");
 				return;
 			}
+			textBox1.Text = dadosPainel[index].text;
 			var data = getDataFromDb(comboBox2.SelectedItem.ToString(), dadosPainel[index]._data1, dadosPainel[index]._data2);
 			labelTitle.Text = dadosPainel[index]._title;
-			labelData1.Text = dadosPainel[index]._data1 + ": " + data[0];
-			labelData2.Text = dadosPainel[index]._data2 + ": " + data[1];
+			if (data.Count > 0)
+			{
+				if (dadosPainel[index]._data1.Contains(':'))
+					labelData1.Text = dadosPainel[index]._data1;
+				else
+				{
+					if (dadosPainel[index]._data1.Contains("VAPS"))
+						labelData1.Text = dadosPainel[index]._data1 + ": " + data[0].Item1 + '€';
+					else
+						labelData1.Text = dadosPainel[index]._data1 + ": " + data[0].Item1;
+				}
+				if (string.IsNullOrEmpty(dadosPainel[index]._data2))
+					labelData2.Text = dadosPainel[index]._data2;
+				else
+					labelData2.Text = dadosPainel[index]._data2 + ": " + data[0].Item2;
+			}
+			else
+			{
+				labelData1.Text = dadosPainel[index]._data1 + "";
+				labelData2.Text = dadosPainel[index]._data2 + "";
+			}
 		}
 
 		private void button7_Click(object sender, EventArgs e)
@@ -352,12 +370,57 @@ namespace Gerador_ecxel
 				MessageBox.Show("Selecione uma loja.");
 				return;
 			}
+			textBox1.Text = dadosPainel[index].text;
+			var data = getDataFromDb(comboBox2.SelectedItem.ToString(), dadosPainel[index]._data1, dadosPainel[index]._data2);
+			labelTitle.Text = dadosPainel[index]._title;
+			dadosPainel[index].text = textBox1.Text;
+			if (data.Count > 0)
+			{
+				if (dadosPainel[index]._data1.Contains(':'))
+					labelData1.Text = dadosPainel[index]._data1;
+				else
+				{
+					if (dadosPainel[index]._data1.Contains("VAPS"))
+						labelData1.Text = dadosPainel[index]._data1 + ": " + data[0].Item1 + '€';
+					else
+						labelData1.Text = dadosPainel[index]._data1 + ": " + data[0].Item1;
+				}
+				if (string.IsNullOrEmpty(dadosPainel[index]._data2))
+					labelData2.Text = dadosPainel[index]._data2;
+				else
+					labelData2.Text = dadosPainel[index]._data2 + ": " + data[0].Item2;
+			}
+			else
+			{
+				labelData1.Text = dadosPainel[index]._data1 + "";
+				labelData2.Text = dadosPainel[index]._data2 + "";
+			}
+		}
+
+		private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (index >= dadosPainel.Count - 1)
+				index = 0;
+			else if (index < 0)
+				index = dadosPainel.Count - 1;
 			var data = getDataFromDb(comboBox2.SelectedItem.ToString(), dadosPainel[index]._data1, dadosPainel[index]._data2);
 			labelTitle.Text = dadosPainel[index]._title;
 
-			Console.WriteLine("Data0: " + (data.Count > 0 ? data[0] : "") + " Data1: " + (data.Count > 1 ? data[1] : ""));
-			labelData1.Text = dadosPainel[index]._data1 + ": " + (data.Count > 0 ? data[0] : "");
-			labelData2.Text = dadosPainel[index]._data2 + ": " + (data.Count > 1 ? data[1] : "");
+			if (data.Count > 0)
+			{
+				labelData1.Text = dadosPainel[index]._data1 + ": " + data[0].Item1;
+				labelData2.Text = dadosPainel[index]._data2 + ": " + data[0].Item2;
+			}
+			else
+			{
+				labelData1.Text = dadosPainel[index]._data1 + ": -";
+				labelData2.Text = dadosPainel[index]._data2 + ": -";
+			}
+		}
+
+		private void textBox1_TextChanged(object sender, EventArgs e)
+		{
+			dadosPainel[index].text = textBox1.Text;
 		}
 	}
 }

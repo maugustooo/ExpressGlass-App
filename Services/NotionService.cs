@@ -105,7 +105,7 @@ namespace Gerador_PDF.Services
 
 		public void SaveDataInDb(string nomeLoja, string obj, string faturados, string txRep, string vaps, string fte, string qtdEscovas)
 		{
-			using (var conn = new SqliteConnection("Data Source=meuBanco.db"))
+			using (var conn = new SqliteConnection("Data Source=lojas.db"))
 			{
 				conn.Open();
 				using (var cmd = conn.CreateCommand())

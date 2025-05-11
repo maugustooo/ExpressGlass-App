@@ -7,6 +7,7 @@ using iTextSharp.text.pdf;
 using iTextSharp.text;
 using Gerador_ecxel;
 using static iTextSharp.text.pdf.codec.TiffWriter;
+using static Gerador_ecxel.Form1;
 
 namespace Gerador_PDF.Services
 {
@@ -69,7 +70,7 @@ namespace Gerador_PDF.Services
 			_form1.UpdateStatusPdf("");
 			MessageBox.Show("PDF gerado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
-		public void GenerateConsola()
+		public void GenerateConsola(List<DadosPainel> dadosPainel)
 		{
 			generateFont();
 			string folderPath = Path.Combine(Application.StartupPath, "PDFs-consola");
@@ -83,7 +84,7 @@ namespace Gerador_PDF.Services
 			doc.Open();
 
 			var titleFont = FontFactory.GetFont("Arial", 16, iTextSharp.text.Font.BOLD);
-			var subFont = FontFactory.GetFont("Arial", 12, iTextSharp.text.Font.BOLD);
+			var subFont = FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.UNDEFINED);
 			var normalFont = FontFactory.GetFont("Arial", 12, iTextSharp.text.Font.NORMAL);
 
 			string logoPath = Path.Combine(sourceDir, "logo.jpeg");
@@ -108,12 +109,21 @@ namespace Gerador_PDF.Services
 
 			doc.Add(new Paragraph("\n"));
 
-			// Seções
-			AddSection(doc, sourceDir, "Vidros Substituídos:", "icone_vidro_substituido.png", subFont);
-			AddSection(doc, sourceDir, "Vidros Reparados:", "icone_vidro_reparado.png", subFont);
-			AddSection(doc, sourceDir, "Vendas Complementares:", "icone_carrinho.png", subFont);
-			AddSection(doc, sourceDir, "Eficiência (FTE):", "icone_eficiencia.png", subFont);
-			AddSection(doc, sourceDir, "Venda de Escovas:", "icone_escovas.png", subFont);
+			AddSection(doc, sourceDir, "Vidros Substituídos:", "icone_vidro_substituido.png", subFont,titleFont,
+				dadosPainel.Where(d => d._title == "Serviços").Select(d => d.text).ToList());
+
+			AddSection(doc, sourceDir, "Vidros Reparados:", "icone_vidro_reparado.png", subFont,titleFont,
+				dadosPainel.Where(d => d._title == "Vidros reparados").Select(d => d.text).ToList());
+
+			AddSection(doc, sourceDir, "Vendas Complementares:", "icone_carrinho.png", subFont,titleFont,
+				dadosPainel.Where(d => d._title == "Vendas Complementares").Select(d => d.text).ToList());
+
+			AddSection(doc, sourceDir, "Eficiência (FTE):", "icone_eficiencia.png", subFont,titleFont,
+				dadosPainel.Where(d => d._title == "Efeciência(FTE)").Select(d => d.text).ToList());
+
+			AddSection(doc, sourceDir, "Venda de Escovas:", "icone_escovas.png", subFont,titleFont,
+				dadosPainel.Where(d => d._title == "Venda de escovas").Select(d => d.text).ToList());
+
 
 			doc.Close();
 		}
@@ -126,12 +136,14 @@ namespace Gerador_PDF.Services
 			table.AddCell(cell);
 		}
 
-		private void AddSection(Document doc, string sourceDir, string label, string iconFile, iTextSharp.text.Font lineFont)
+		private void AddSection(Document doc, string sourceDir, string label, string iconFile,
+			iTextSharp.text.Font lineFont, iTextSharp.text.Font titleFont, List<string> text)
 		{
 			PdfPTable table = new PdfPTable(2);
 			table.WidthPercentage = 100;
 			table.SetWidths(new float[] { 1, 9 });
 
+			// Imagem
 			string iconPath = Path.Combine(sourceDir, iconFile);
 			iTextSharp.text.Image icon = File.Exists(iconPath) ? iTextSharp.text.Image.GetInstance(iconPath) : null;
 			if (icon != null)
@@ -144,22 +156,44 @@ namespace Gerador_PDF.Services
 			}
 			else
 			{
-				table.AddCell("");
+				table.AddCell(""); // célula vazia se não houver imagem
 			}
 
+			// Texto (título + observações)
 			PdfPCell textCell = new PdfPCell();
 			textCell.Border = iTextSharp.text.Rectangle.NO_BORDER;
-			Paragraph p = new Paragraph(label + "\n", FontFactory.GetFont("Helvetica", 11, iTextSharp.text.Font.BOLD));
-			for (int i = 0; i < 3; i++)
+
+			Paragraph p = new Paragraph();
+
+			// Título sublinhado
+			var underlinedFont = new iTextSharp.text.Font(titleFont);
+			underlinedFont.SetStyle(iTextSharp.text.Font.UNDERLINE);
+			p.Add(new Chunk(label + "\n", underlinedFont));
+
+			// Observações normais
+			if (text != null && text.Count > 0)
 			{
-				p.Add(new Chunk("__________________________________________________________\n", lineFont));
+				foreach (var obs in text)
+				{
+					p.Add(new Chunk("- " + obs + "\n", lineFont));
+				}
 			}
+			else
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					p.Add(new Chunk("__________________________________________________________\n", lineFont));
+				}
+			}
+
 			textCell.AddElement(p);
 			table.AddCell(textCell);
 
 			doc.Add(table);
 			doc.Add(new Paragraph("\n"));
 		}
+
+
 
 		public void GeneratePdf(List<string[]> entries, string folderPath)
 		{

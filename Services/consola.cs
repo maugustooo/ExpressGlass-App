@@ -50,7 +50,7 @@ namespace Gerador_PDF.Services
 				string sql = @"
 				CREATE TABLE IF NOT EXISTS Data (
 					Id INTEGER PRIMARY KEY AUTOINCREMENT,
-					NomeLoja TEXT NOT NULL,
+					NomeLoja TEXT NOT NULL UNIQUE,
 					obj TEXT NOT NULL,
 					Faturados TEXT NOT NULL,
 					""TX REP %"" TEXT NOT NULL,

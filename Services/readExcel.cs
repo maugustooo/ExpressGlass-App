@@ -241,10 +241,10 @@ namespace Gerador_PDF.Services
 								loja = row.IsNull(1) ? string.Empty : row[1]?.ToString() ?? string.Empty,
 								faturados = TryRound(row, 2, 1),
 								fte = TryRound(row, 3, 1),
-								objAoDia = TryRound(row, 4, 0),
-								objMes = TryRound(row, 5, 0),
-								taxRep = TryRound(row, 9, 2),
-								qntRep = TryRound(row, 10, 0)
+								objAoDia = TryRound(row, 5, 0),
+								objMes = TryRound(row, 6, 0),
+								taxRep = TryRound(row, 10, 2),
+								qntRep = TryRound(row, 11, 0)
 
 							})
 							.Where(data => !string.IsNullOrEmpty(data.loja))

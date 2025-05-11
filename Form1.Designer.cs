@@ -33,8 +33,8 @@
 			bindingSource1 = new BindingSource(components);
 			backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
 			tabPage3 = new TabPage();
-			comboBox2 = new ComboBox();
 			panel9 = new Panel();
+			comboBox2 = new ComboBox();
 			labelTitle = new Label();
 			button8 = new Button();
 			label7 = new Label();
@@ -42,7 +42,6 @@
 			labelData1 = new Label();
 			textBox1 = new TextBox();
 			labelData2 = new Label();
-			monthConsola = new ComboBox();
 			progressBar5 = new ProgressBar();
 			panel6 = new Panel();
 			button2 = new Button();
@@ -112,9 +111,7 @@
 			// 
 			tabPage3.BackColor = Color.Gainsboro;
 			tabPage3.BackgroundImageLayout = ImageLayout.None;
-			tabPage3.Controls.Add(comboBox2);
 			tabPage3.Controls.Add(panel9);
-			tabPage3.Controls.Add(monthConsola);
 			tabPage3.Controls.Add(progressBar5);
 			tabPage3.Controls.Add(panel6);
 			tabPage3.Controls.Add(button6);
@@ -127,25 +124,9 @@
 			tabPage3.TabIndex = 6;
 			tabPage3.Text = "Consola";
 			// 
-			// comboBox2
-			// 
-			comboBox2.AutoCompleteMode = AutoCompleteMode.Suggest;
-			comboBox2.AutoCompleteSource = AutoCompleteSource.ListItems;
-			comboBox2.Cursor = Cursors.Hand;
-			comboBox2.DropDownHeight = 500;
-			comboBox2.Font = new Font("Segoe UI", 12F);
-			comboBox2.FormattingEnabled = true;
-			comboBox2.IntegralHeight = false;
-			comboBox2.ItemHeight = 21;
-			comboBox2.Location = new Point(286, 122);
-			comboBox2.MaxDropDownItems = 12;
-			comboBox2.MaxLength = 60;
-			comboBox2.Name = "comboBox2";
-			comboBox2.Size = new Size(173, 29);
-			comboBox2.TabIndex = 28;
-			// 
 			// panel9
 			// 
+			panel9.Controls.Add(comboBox2);
 			panel9.Controls.Add(labelTitle);
 			panel9.Controls.Add(button8);
 			panel9.Controls.Add(label7);
@@ -153,10 +134,28 @@
 			panel9.Controls.Add(labelData1);
 			panel9.Controls.Add(textBox1);
 			panel9.Controls.Add(labelData2);
-			panel9.Location = new Point(286, 157);
+			panel9.Location = new Point(286, 118);
 			panel9.Name = "panel9";
 			panel9.Size = new Size(529, 229);
 			panel9.TabIndex = 27;
+			// 
+			// comboBox2
+			// 
+			comboBox2.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+			comboBox2.AutoCompleteSource = AutoCompleteSource.ListItems;
+			comboBox2.Cursor = Cursors.Hand;
+			comboBox2.DropDownHeight = 500;
+			comboBox2.Font = new Font("Segoe UI", 12F);
+			comboBox2.FormattingEnabled = true;
+			comboBox2.IntegralHeight = false;
+			comboBox2.ItemHeight = 21;
+			comboBox2.Location = new Point(347, 29);
+			comboBox2.MaxDropDownItems = 12;
+			comboBox2.MaxLength = 60;
+			comboBox2.Name = "comboBox2";
+			comboBox2.Size = new Size(171, 29);
+			comboBox2.TabIndex = 28;
+			comboBox2.SelectedIndexChanged += comboBox2_SelectedIndexChanged;
 			// 
 			// labelTitle
 			// 
@@ -209,7 +208,7 @@
 			// 
 			labelData1.AutoSize = true;
 			labelData1.Font = new Font("Segoe UI", 15F);
-			labelData1.Location = new Point(5, 58);
+			labelData1.Location = new Point(5, 66);
 			labelData1.Name = "labelData1";
 			labelData1.Size = new Size(45, 28);
 			labelData1.TabIndex = 22;
@@ -218,39 +217,22 @@
 			// textBox1
 			// 
 			textBox1.Font = new Font("Segoe UI", 12F);
-			textBox1.Location = new Point(147, 69);
+			textBox1.Location = new Point(181, 69);
 			textBox1.Multiline = true;
 			textBox1.Name = "textBox1";
-			textBox1.Size = new Size(371, 153);
+			textBox1.Size = new Size(337, 153);
 			textBox1.TabIndex = 24;
+			textBox1.TextChanged += textBox1_TextChanged;
 			// 
 			// labelData2
 			// 
 			labelData2.AutoSize = true;
 			labelData2.Font = new Font("Segoe UI", 15F);
-			labelData2.Location = new Point(5, 86);
+			labelData2.Location = new Point(5, 100);
 			labelData2.Name = "labelData2";
 			labelData2.Size = new Size(102, 28);
 			labelData2.TabIndex = 23;
 			labelData2.Text = "Faturados:";
-			// 
-			// monthConsola
-			// 
-			monthConsola.AutoCompleteSource = AutoCompleteSource.ListItems;
-			monthConsola.Cursor = Cursors.Hand;
-			monthConsola.DropDownHeight = 500;
-			monthConsola.DropDownStyle = ComboBoxStyle.DropDownList;
-			monthConsola.Font = new Font("Segoe UI", 12F);
-			monthConsola.FormattingEnabled = true;
-			monthConsola.IntegralHeight = false;
-			monthConsola.ItemHeight = 21;
-			monthConsola.Items.AddRange(new object[] { "Janeiro", "Fevereiro", "Março", "Abril", "Junho", "Julho", "Agosto", "Setembro", "Novembro", "Dezembro" });
-			monthConsola.Location = new Point(704, 122);
-			monthConsola.MaxDropDownItems = 12;
-			monthConsola.MaxLength = 60;
-			monthConsola.Name = "monthConsola";
-			monthConsola.Size = new Size(173, 29);
-			monthConsola.TabIndex = 20;
 			// 
 			// progressBar5
 			// 
@@ -869,7 +851,6 @@
 		private Label statusLabel;
 		private ProgressBar progressBar1;
 		private TabControl tabControl1;
-		private ComboBox monthConsola;
 		private TextBox textBox1;
 		private Label labelData2;
 		private Label labelData1;
