@@ -7,6 +7,7 @@ using System.Net;
 using static Gerador_PDF.Services.readExcel;
 using Microsoft.Data.Sqlite;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Globalization;
 
 namespace Gerador_PDF.Services
 {
@@ -138,10 +139,23 @@ namespace Gerador_PDF.Services
 		public async Task CarregarLojasParaBaseLocalAsync()
 		{
 			var url = $"https://api.notion.com/v1/databases/{_dataBaseIdKPI}/query";
+			var mesAtual = DateTime.Now.ToString("MMMM yyyy", new CultureInfo("pt-PT")); // "maio 2025"
+			mesAtual = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(mesAtual);
+			var filtroJson = $@"
+			{{
+			  ""filter"": {{
+				""property"": ""Mês"",
+				""multi_select"": {{
+				  ""contains"": ""{mesAtual}""
+				}}
+			  }}
+			}}";
+
 			var request = new HttpRequestMessage(HttpMethod.Post, url)
 			{
-				Content = new StringContent("{}", Encoding.UTF8, "application/json")
+				Content = new StringContent(filtroJson, Encoding.UTF8, "application/json")
 			};
+
 			var response = await _client.SendAsync(request);
 			var responseContent = await response.Content.ReadAsStringAsync();
 

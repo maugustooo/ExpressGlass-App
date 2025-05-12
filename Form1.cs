@@ -49,6 +49,7 @@ namespace Gerador_ecxel
 			dadosPainel.Add(new DadosPainel("Vendas Complementares", "VAPS", ""));
 			dadosPainel.Add(new DadosPainel("Efeciência(FTE)", "Obj: 1.8", "FTE"));
 			dadosPainel.Add(new DadosPainel("Venda de escovas", "QTD Escovas", ""));
+			dadosPainel.Add(new DadosPainel("Considerações finais", "", ""));
 
 			notionService = new NotionService(config.NotionApiKey, config.NotionDatabaseId, config.NotionDatabaseIdKPIs, config.NotionDatabaseIdLojas, config.NotionDatabaseIdStockParado);
 			this.Shown += Form1_Shown;
@@ -66,7 +67,7 @@ namespace Gerador_ecxel
 				MessageBox.Show($"Erro ao criar a base de dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
-		private void CarregarComboBox()
+		public void CarregarComboBox()
 		{
 			string caminhoBD = "Data Source=lojas.db";
 			string query = "SELECT NomeLoja FROM Data";
@@ -153,6 +154,15 @@ namespace Gerador_ecxel
 				progressBar1.Visible = false;
 				statusLabel.Visible = false;
 			}
+		}
+
+
+		public string getComboValue()
+		{
+			if (comboBox2.SelectedItem != null)
+				return comboBox2.SelectedItem.ToString();
+			else
+				return "";
 		}
 		private void button1_Click(object sender, EventArgs e)
 		{
@@ -334,8 +344,10 @@ namespace Gerador_ecxel
 				MessageBox.Show("Selecione uma loja.");
 				return;
 			}
+			List<(string, string)> data = new List<(string, string)>();
 			textBox1.Text = dadosPainel[index].text;
-			var data = getDataFromDb(comboBox2.SelectedItem.ToString(), dadosPainel[index]._data1, dadosPainel[index]._data2);
+			if (!string.IsNullOrEmpty(dadosPainel[index]._data1) || !string.IsNullOrEmpty(dadosPainel[index]._data2))
+				data = getDataFromDb(comboBox2.SelectedItem.ToString(), dadosPainel[index]._data1, dadosPainel[index]._data2);
 			labelTitle.Text = dadosPainel[index]._title;
 			if (data.Count > 0)
 			{
@@ -363,15 +375,18 @@ namespace Gerador_ecxel
 		private void button7_Click(object sender, EventArgs e)
 		{
 			index++;
-			if (index >= dadosPainel.Count - 1)
+			if (index >= dadosPainel.Count)
 				index = 0;
 			if (comboBox2.SelectedItem == null)
 			{
 				MessageBox.Show("Selecione uma loja.");
 				return;
 			}
+
+			List<(string, string)> data = new List<(string, string)>();
 			textBox1.Text = dadosPainel[index].text;
-			var data = getDataFromDb(comboBox2.SelectedItem.ToString(), dadosPainel[index]._data1, dadosPainel[index]._data2);
+			if (!string.IsNullOrEmpty(dadosPainel[index]._data1) || !string.IsNullOrEmpty(dadosPainel[index]._data2))
+				data = getDataFromDb(comboBox2.SelectedItem.ToString(), dadosPainel[index]._data1, dadosPainel[index]._data2);
 			labelTitle.Text = dadosPainel[index]._title;
 			dadosPainel[index].text = textBox1.Text;
 			if (data.Count > 0)
@@ -399,10 +414,10 @@ namespace Gerador_ecxel
 
 		private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (index >= dadosPainel.Count - 1)
-				index = 0;
-			else if (index < 0)
-				index = dadosPainel.Count - 1;
+			//if (index >= dadosPainel.Count)
+			//	index = 0;
+			//else if (index < 0)
+			//	index = dadosPainel.Count;
 			var data = getDataFromDb(comboBox2.SelectedItem.ToString(), dadosPainel[index]._data1, dadosPainel[index]._data2);
 			labelTitle.Text = dadosPainel[index]._title;
 
@@ -422,5 +437,25 @@ namespace Gerador_ecxel
 		{
 			dadosPainel[index].text = textBox1.Text;
 		}
+
+		private void button9_Click(object sender, EventArgs e)
+		{
+			string folderPath = Path.Combine(Application.StartupPath, "PDFs-consola");
+
+			if (Directory.Exists(folderPath))
+			{
+				System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+				{
+					FileName = folderPath,
+					UseShellExecute = true,
+					Verb = "open"
+				});
+			}
+			else
+			{
+				MessageBox.Show("A pasta não existe: " + folderPath, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
 	}
 }

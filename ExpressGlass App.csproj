@@ -8,13 +8,20 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>apple-touch-icon-150x150.ico</ApplicationIcon>
-  </PropertyGroup>
+  </PropertyGroup>	
 
-  <ItemGroup>
-    <Compile Remove="Source\**" />
-    <EmbeddedResource Remove="Source\**" />
-    <None Remove="Source\**" />
-  </ItemGroup>
+	<ItemGroup>
+  <Content Include="Source\**\*.*">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+  </Content>
+
+  <Content Include="NotionConfig.json">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+  </Content>
+</ItemGroup>
+
 
   <ItemGroup>
     <Content Include="apple-touch-icon-150x150.ico"></Content>

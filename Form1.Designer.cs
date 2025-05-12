@@ -85,6 +85,7 @@
 			tabControl1 = new TabControl();
 			statusStrip1 = new StatusStrip();
 			toolStripProgressBar1 = new ToolStripProgressBar();
+			button9 = new Button();
 			((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
 			tabPage3.SuspendLayout();
 			panel9.SuspendLayout();
@@ -245,6 +246,7 @@
 			// panel6
 			// 
 			panel6.BorderStyle = BorderStyle.FixedSingle;
+			panel6.Controls.Add(button9);
 			panel6.Controls.Add(button2);
 			panel6.Dock = DockStyle.Left;
 			panel6.Font = new Font("Segoe UI", 15F);
@@ -266,6 +268,8 @@
 			button2.TabIndex = 14;
 			button2.Text = "Atualizar Dados da API";
 			button2.UseVisualStyleBackColor = false;
+			button2.MouseEnter += GerarPdf_MouseEnter;
+			button2.MouseLeave += GerarPdf_MouseLeave;
 			// 
 			// button6
 			// 
@@ -466,7 +470,7 @@
 			// 
 			statusLabel2.AutoSize = true;
 			statusLabel2.Font = new Font("Segoe UI", 23F);
-			statusLabel2.Location = new Point(497, 330);
+			statusLabel2.Location = new Point(440, 324);
 			statusLabel2.Name = "statusLabel2";
 			statusLabel2.Size = new Size(0, 42);
 			statusLabel2.TabIndex = 8;
@@ -751,6 +755,23 @@
 			toolStripProgressBar1.Size = new Size(100, 16);
 			toolStripProgressBar1.Visible = false;
 			// 
+			// button9
+			// 
+			button9.BackColor = Color.LightGray;
+			button9.FlatAppearance.BorderSize = 0;
+			button9.FlatAppearance.MouseOverBackColor = Color.Black;
+			button9.FlatStyle = FlatStyle.Flat;
+			button9.Font = new Font("Segoe UI", 13F);
+			button9.Location = new Point(30, 248);
+			button9.Name = "button9";
+			button9.Size = new Size(160, 150);
+			button9.TabIndex = 15;
+			button9.Text = "Abrir Pasta Dos PDF´S";
+			button9.UseVisualStyleBackColor = false;
+			button9.Click += button9_Click;
+			button9.MouseEnter += GerarPdf_MouseEnter;
+			button9.MouseLeave += GerarPdf_MouseLeave;
+			// 
 			// Form1
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -861,5 +882,6 @@
 		private StatusStrip statusStrip1;
 		private ToolStripProgressBar toolStripProgressBar1;
 		private ComboBox comboBox2;
+		private Button button9;
 	}
 }

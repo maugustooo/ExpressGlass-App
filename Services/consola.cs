@@ -26,7 +26,7 @@ namespace Gerador_PDF.Services
 			_form1.UpdateStatusBar(1);
 			await notionService.CarregarLojasParaBaseLocalAsync();
 			_form1.UpdateStatusBar(0);
-			//_form1.CarregarLojasNoComboBox();
+			_form1.CarregarComboBox();
 		}
 		public void createDataBase()
 		{

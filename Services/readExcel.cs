@@ -73,7 +73,7 @@ namespace Gerador_PDF.Services
 
 			double value;
 
-			if (columnIndex == 9 || columnIndex == 7 || columnIndex == 27)
+			if (columnIndex == 10 || columnIndex == 7 || columnIndex == 27)
 			{
 				if (double.TryParse(rawValue, NumberStyles.Any, new CultureInfo("pt-PT"), out value))
 				{

@@ -8,6 +8,7 @@ using iTextSharp.text;
 using Gerador_ecxel;
 using static iTextSharp.text.pdf.codec.TiffWriter;
 using static Gerador_ecxel.Form1;
+using System.Globalization;
 
 namespace Gerador_PDF.Services
 {
@@ -91,7 +92,7 @@ namespace Gerador_PDF.Services
 			if (File.Exists(logoPath))
 			{
 				iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance(logoPath);
-				logo.ScaleAbsolute(160, 35);
+				logo.ScaleAbsolute(200, 60);
 				logo.Alignment = Element.ALIGN_LEFT;
 				doc.Add(logo);
 			}
@@ -103,8 +104,10 @@ namespace Gerador_PDF.Services
 			header.WidthPercentage = 100;
 			header.SetWidths(new float[] { 1, 1 });
 
-			AddHeaderCell(header, "Loja:", normalFont);
-			AddHeaderCell(header, "Mês:", normalFont);
+			AddHeaderCell(header, "Loja:",_form1.getComboValue(), titleFont);
+			string mesAtual = DateTime.Now.ToString("MMMM", new CultureInfo("pt-PT"));
+			mesAtual = char.ToUpper(mesAtual[0]) + mesAtual.Substring(1);
+			AddHeaderCell(header, "Mês:", mesAtual, titleFont);
 			doc.Add(header);
 
 			doc.Add(new Paragraph("\n"));
@@ -124,13 +127,15 @@ namespace Gerador_PDF.Services
 			AddSection(doc, sourceDir, "Venda de Escovas:", "icone_escovas.png", subFont,titleFont,
 				dadosPainel.Where(d => d._title == "Venda de escovas").Select(d => d.text).ToList());
 
+			AddSection(doc, sourceDir, "Considerações finais:", "Considerações_finais.png", subFont, titleFont,
+				dadosPainel.Where(d => d._title == "Considerações finais").Select(d => d.text).ToList());
 
 			doc.Close();
 		}
 
-		private void AddHeaderCell(PdfPTable table, string label, iTextSharp.text.Font font)
+		private void AddHeaderCell(PdfPTable table, string label, string text, iTextSharp.text.Font font)
 		{
-			PdfPCell cell = new PdfPCell(new Phrase(label + " ____________________", font));
+			PdfPCell cell = new PdfPCell(new Phrase($"{label} {text}", font));
 			cell.Border = iTextSharp.text.Rectangle.NO_BORDER;
 			cell.PaddingBottom = 10f;
 			table.AddCell(cell);
@@ -168,7 +173,7 @@ namespace Gerador_PDF.Services
 			// Título sublinhado
 			var underlinedFont = new iTextSharp.text.Font(titleFont);
 			underlinedFont.SetStyle(iTextSharp.text.Font.UNDERLINE);
-			p.Add(new Chunk(label + "\n", underlinedFont));
+			p.Add(new Chunk(label + "\n", titleFont));
 
 			// Observações normais
 			if (text != null && text.Count > 0)
