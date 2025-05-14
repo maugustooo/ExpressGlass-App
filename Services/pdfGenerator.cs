@@ -9,6 +9,7 @@ using Gerador_ecxel;
 using static iTextSharp.text.pdf.codec.TiffWriter;
 using static Gerador_ecxel.Form1;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Gerador_PDF.Services
 {
@@ -71,134 +72,101 @@ namespace Gerador_PDF.Services
 			_form1.UpdateStatusPdf("");
 			MessageBox.Show("PDF gerado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
-		public void GenerateConsola(List<DadosPainel> dadosPainel)
+
+		public void editarPDFBase(List<(string, string)> dados, DateTime data, string loja)
 		{
-			generateFont();
-			string folderPath = Path.Combine(Application.StartupPath, "PDFs-consola");
-			if (!Directory.Exists(folderPath))
-				Directory.CreateDirectory(folderPath);
-			string filePath = Path.Combine(folderPath, $"Consola" + "_" + $"{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf");
-			Document doc = new Document(PageSize.A4);
-			if (doc == null)
-				throw new Exception("O documento não foi inicializado corretamente.");
-			PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
-			doc.Open();
-
-			var titleFont = FontFactory.GetFont("Arial", 16, iTextSharp.text.Font.BOLD);
-			var subFont = FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.UNDEFINED);
-			var normalFont = FontFactory.GetFont("Arial", 12, iTextSharp.text.Font.NORMAL);
-
-			string logoPath = Path.Combine(sourceDir, "logo.jpeg");
-			if (File.Exists(logoPath))
+			string inputPath = Path.Combine(Application.StartupPath, "Source", "Base.pdf");
+			string outputPath;
+			if (!string.IsNullOrEmpty(loja))
 			{
-				iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance(logoPath);
-				logo.ScaleAbsolute(200, 60);
-				logo.Alignment = Element.ALIGN_LEFT;
-				doc.Add(logo);
-			}
-
-			doc.Add(new Paragraph("\n"));
-
-			// Cabeçalho - Loja / Mês
-			PdfPTable header = new PdfPTable(2);
-			header.WidthPercentage = 100;
-			header.SetWidths(new float[] { 1, 1 });
-
-			AddHeaderCell(header, "Loja:",_form1.getComboValue(), titleFont);
-			string mesAtual = DateTime.Now.ToString("MMMM", new CultureInfo("pt-PT"));
-			mesAtual = char.ToUpper(mesAtual[0]) + mesAtual.Substring(1);
-			AddHeaderCell(header, "Mês:", mesAtual, titleFont);
-			doc.Add(header);
-
-			doc.Add(new Paragraph("\n"));
-
-			AddSection(doc, sourceDir, "Vidros Substituídos:", "icone_vidro_substituido.png", subFont,titleFont,
-				dadosPainel.Where(d => d._title == "Serviços").Select(d => d.text).ToList());
-
-			AddSection(doc, sourceDir, "Vidros Reparados:", "icone_vidro_reparado.png", subFont,titleFont,
-				dadosPainel.Where(d => d._title == "Vidros reparados").Select(d => d.text).ToList());
-
-			AddSection(doc, sourceDir, "Vendas Complementares:", "icone_carrinho.png", subFont,titleFont,
-				dadosPainel.Where(d => d._title == "Vendas Complementares").Select(d => d.text).ToList());
-
-			AddSection(doc, sourceDir, "Eficiência (FTE):", "icone_eficiencia.png", subFont,titleFont,
-				dadosPainel.Where(d => d._title == "Efeciência(FTE)").Select(d => d.text).ToList());
-
-			AddSection(doc, sourceDir, "Venda de Escovas:", "icone_escovas.png", subFont,titleFont,
-				dadosPainel.Where(d => d._title == "Venda de escovas").Select(d => d.text).ToList());
-
-			AddSection(doc, sourceDir, "Considerações finais:", "Considerações_finais.png", subFont, titleFont,
-				dadosPainel.Where(d => d._title == "Considerações finais").Select(d => d.text).ToList());
-
-			doc.Close();
-		}
-
-		private void AddHeaderCell(PdfPTable table, string label, string text, iTextSharp.text.Font font)
-		{
-			PdfPCell cell = new PdfPCell(new Phrase($"{label} {text}", font));
-			cell.Border = iTextSharp.text.Rectangle.NO_BORDER;
-			cell.PaddingBottom = 10f;
-			table.AddCell(cell);
-		}
-
-		private void AddSection(Document doc, string sourceDir, string label, string iconFile,
-			iTextSharp.text.Font lineFont, iTextSharp.text.Font titleFont, List<string> text)
-		{
-			PdfPTable table = new PdfPTable(2);
-			table.WidthPercentage = 100;
-			table.SetWidths(new float[] { 1, 9 });
-
-			// Imagem
-			string iconPath = Path.Combine(sourceDir, iconFile);
-			iTextSharp.text.Image icon = File.Exists(iconPath) ? iTextSharp.text.Image.GetInstance(iconPath) : null;
-			if (icon != null)
-			{
-				icon.ScaleAbsolute(25, 25);
-				PdfPCell imgCell = new PdfPCell(icon);
-				imgCell.Border = iTextSharp.text.Rectangle.NO_BORDER;
-				imgCell.VerticalAlignment = Element.ALIGN_TOP;
-				table.AddCell(imgCell);
+				string pastaLojas = Path.Combine(Application.StartupPath, "PDFs-consola", "lojas");
+				if (!Directory.Exists(pastaLojas))
+					Directory.CreateDirectory(pastaLojas);
+				outputPath = Path.Combine(pastaLojas, $"{loja}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.pdf");
 			}
 			else
 			{
-				table.AddCell(""); // célula vazia se não houver imagem
+				string pastaConsola = Path.Combine(Application.StartupPath, "PDFs-consola");
+				if (!Directory.Exists(pastaConsola))
+					Directory.CreateDirectory(pastaConsola);
+				outputPath = Path.Combine(pastaConsola, $"Consola_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.pdf");
 			}
 
-			// Texto (título + observações)
-			PdfPCell textCell = new PdfPCell();
-			textCell.Border = iTextSharp.text.Rectangle.NO_BORDER;
-
-			Paragraph p = new Paragraph();
-
-			// Título sublinhado
-			var underlinedFont = new iTextSharp.text.Font(titleFont);
-			underlinedFont.SetStyle(iTextSharp.text.Font.UNDERLINE);
-			p.Add(new Chunk(label + "\n", titleFont));
-
-			// Observações normais
-			if (text != null && text.Count > 0)
+			iTextSharp.text.Font titleFont = new iTextSharp.text.Font(bfcalibriBold, 38, iTextSharp.text.Font.NORMAL);
+			using (PdfReader reader = new PdfReader(inputPath))
+			using (FileStream outputStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+			using (PdfStamper stamper = new PdfStamper(reader, outputStream))
 			{
-				foreach (var obs in text)
-				{
-					p.Add(new Chunk("- " + obs + "\n", lineFont));
-				}
-			}
-			else
-			{
-				for (int i = 0; i < 3; i++)
-				{
-					p.Add(new Chunk("__________________________________________________________\n", lineFont));
-				}
-			}
+				var cb = stamper.GetOverContent(1);
+				var bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+				cb.SetColorFill(BaseColor.BLACK);
+				cb.SetFontAndSize(titleFont.BaseFont, titleFont.Size -20);
 
-			textCell.AddElement(p);
-			table.AddCell(textCell);
+				cb.BeginText();
+				if (!string.IsNullOrEmpty(loja))
+					cb.ShowTextAligned(Element.ALIGN_CENTER, $"{loja}", 320, 795, 0);
+				else
+					cb.ShowTextAligned(Element.ALIGN_CENTER, $"{_form1.getComboValue()}", 320, 795, 0);
+				cb.EndText();
 
-			doc.Add(table);
-			doc.Add(new Paragraph("\n"));
+				cb.BeginText();
+				cb.ShowTextAligned(Element.ALIGN_RIGHT, data.ToString("dd.MM.yyyy"), 550, 795, 0);
+				cb.EndText();
+				cb.SetFontAndSize(titleFont.BaseFont, titleFont.Size);
+				int y = 645;
+				for (int i = 0; i < dados.Count; i++)
+				{
+					if (i == 4 || i == 2)
+					{
+						cb.BeginText();
+						if (i == 2)
+							cb.ShowTextAligned(Element.ALIGN_LEFT, dados[i].Item1 + "€", 100, y, 0);
+						else
+							cb.ShowTextAligned(Element.ALIGN_LEFT, dados[i].Item1, 100, y, 0); 
+						cb.ShowTextAligned(Element.ALIGN_LEFT, dados[i].Item1, 100, y, 0);
+						cb.EndText();
+						y -= 145;
+						continue;
+					}
+					if (!string.IsNullOrEmpty(dados[i].Item1))
+					{
+						cb.BeginText();
+						cb.SetFontAndSize(titleFont.BaseFont, titleFont.Size);
+						cb.ShowTextAligned(Element.ALIGN_LEFT, dados[i].Item1, 440, y, 0);
+						cb.EndText();
+					}
+					if (!string.IsNullOrEmpty(dados[i].Item2))
+					{
+						cb.BeginText();
+						if (i == 1)
+						{
+							string original = dados[i].Item2 ?? "";
+
+							string limpo = Regex.Replace(original, @"[^0-9.,\-]", "").Trim();
+
+							limpo = limpo.Replace(',', '.');
+
+							bool sucesso = float.TryParse(limpo, NumberStyles.Float, CultureInfo.InvariantCulture, out float numero);
+							if (!sucesso)
+							{
+								Console.WriteLine($"Erro: não consegui converter '{original}' -> '{limpo}'");
+								numero = 0f;
+							}
+
+							string formatado = numero.ToString("F1", CultureInfo.InvariantCulture);
+
+							cb.ShowTextAligned(Element.ALIGN_LEFT, formatado + "%", 100, y, 0);
+						}
+						else
+							cb.ShowTextAligned(Element.ALIGN_LEFT, dados[i].Item2, 100, y, 0);
+						cb.EndText();
+					}
+					y -= 150;
+				}
+
+				stamper.Close();
+			}
 		}
-
-
 
 		public void GeneratePdf(List<string[]> entries, string folderPath)
 		{

@@ -320,18 +320,82 @@ namespace Gerador_ecxel
 				MessageBox.Show("Nenhum ficheiro selecionado", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
+		private List<string> getTodasAsLojas()
+		{
+			List<string> lojas = new List<string>();
+
+			using (var conn = new SqliteConnection("Data Source=lojas.db"))
+			{
+				conn.Open();
+				string sql = "SELECT DISTINCT NomeLoja FROM Data";
+
+				using (var cmd = new SqliteCommand(sql, conn))
+				using (var reader = cmd.ExecuteReader())
+				{
+					while (reader.Read())
+					{
+						lojas.Add(reader.GetString(0));
+					}
+				}
+			}
+			return lojas;
+		}
 
 		private void button6_Click(object sender, EventArgs e)
 		{
 			try
 			{
 				pdfGenerator pdfGenerator = new pdfGenerator(this);
-				pdfGenerator.GenerateConsola(dadosPainel);
+				DateTime dataAtual = DateTime.Now;
+
+				string lojaSelecionada = comboBox2.SelectedItem?.ToString();
+
+				if (!string.IsNullOrEmpty(lojaSelecionada))
+				{
+					List<(string, string)> data = new List<(string, string)>();
+
+					for (int i = 0; i < dadosPainel.Count; i++)
+					{
+						var d1 = dadosPainel[i]._data1;
+						var d2 = dadosPainel[i]._data2;
+
+						if (!string.IsNullOrEmpty(d1) || !string.IsNullOrEmpty(d2))
+						{
+							var resultado = getDataFromDb(lojaSelecionada, d1, d2);
+							data.AddRange(resultado);
+						}
+					}
+
+					pdfGenerator.editarPDFBase(data, dataAtual, "");
+				}
+				else
+				{
+					List<string> lojas = getTodasAsLojas();
+
+					foreach (var loja in lojas)
+					{
+						List<(string, string)> data = new List<(string, string)>();
+
+						for (int i = 0; i < dadosPainel.Count; i++)
+						{
+							var d1 = dadosPainel[i]._data1;
+							var d2 = dadosPainel[i]._data2;
+
+							if (!string.IsNullOrEmpty(d1) || !string.IsNullOrEmpty(d2))
+							{
+								var resultado = getDataFromDb(loja, d1, d2);
+								data.AddRange(resultado);
+							}
+						}
+						pdfGenerator.editarPDFBase(data, dataAtual, loja);
+					}
+				}
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"Erro ao gerar PDF: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Erro ao gerar PDF: " + ex.Message);
 			}
+
 		}
 
 		private void button8_Click(object sender, EventArgs e)
